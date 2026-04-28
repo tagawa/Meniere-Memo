@@ -1,2 +1,59 @@
-// stub — implemented in later tasks
-export {};
+import { t } from './i18n.js';
+import { getEpisodes } from './store.js';
+import { formatDuration } from './stats.js';
+
+// Formats a date string for display: "Mon 28 Apr · 14:32"
+function formatDateTime(isoString) {
+  const d = new Date(isoString);
+  return d.toLocaleDateString('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short'
+  }) + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function episodeSummary(ep) {
+  const parts = [];
+  if (ep.endTime) {
+    const mins = Math.round((new Date(ep.endTime) - new Date(ep.startTime)) / 60000);
+    parts.push(formatDuration(mins));
+  }
+  if (ep.tinnitus)    parts.push(t('log.tinnitus'));
+  if (ep.earBlocked)  parts.push(t('log.earBlocked'));
+  if (ep.shoulderAche) parts.push(t('log.shoulderAche'));
+  return parts.join(' · ') || ep.severity;
+}
+
+export function renderHome(onLogClick, onEpisodeClick) {
+  const view = document.getElementById('view-home');
+  const recent = getEpisodes()
+    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+    .slice(0, 3);
+
+  view.innerHTML = `
+    <button class="btn-primary" id="log-btn" style="margin-bottom: 32px;">
+      ${t('home.logButton')}
+    </button>
+
+    <h2 class="section-label">${t('home.recentEpisodes')}</h2>
+
+    ${recent.length === 0
+      ? `<p class="empty-state">${t('home.noEpisodes')}</p>`
+      : recent.map(ep => `
+          <button class="episode-card" data-id="${ep.id}">
+            <span class="severity-badge severity-badge--${ep.severity}">
+              ${t(`log.${ep.severity}`)}
+            </span>
+            <span class="episode-card-body">
+              <span class="episode-card-date">${formatDateTime(ep.startTime)}</span>
+              <span class="episode-card-summary">${episodeSummary(ep)}</span>
+            </span>
+            <span class="episode-card-arrow" aria-hidden="true">›</span>
+          </button>`
+        ).join('')
+    }
+  `;
+
+  document.getElementById('log-btn').addEventListener('click', onLogClick);
+  view.querySelectorAll('.episode-card[data-id]').forEach(card => {
+    card.addEventListener('click', () => onEpisodeClick(card.dataset.id));
+  });
+}
