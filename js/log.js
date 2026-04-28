@@ -3,6 +3,9 @@ import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes } 
 
 let onSaved;      // callback to re-render the current view after save
 let editingId = null; // null = new episode, string = editing existing
+let currentEpisodeStart = null;
+// Optional field state — reset each time modal opens
+let tinnitus, earBlocked, shoulderAche, coldExtremities;
 
 // --- Pill group helper ---
 function makePillGroup(name, labels, currentValue) {
@@ -58,6 +61,12 @@ function closeModal() {
 
 // --- Render modal content ---
 function renderModal(episode) {
+  currentEpisodeStart  = episode.startTime;
+  tinnitus             = episode.tinnitus;
+  earBlocked           = episode.earBlocked;
+  shoulderAche         = episode.shoulderAche;
+  coldExtremities      = episode.coldExtremities;
+
   const isEdit = editingId !== null;
   const startDate = new Date(episode.startTime);
   const dateStr = startDate.toLocaleDateString('en-GB', {
@@ -93,7 +102,86 @@ function renderModal(episode) {
       </div>
 
       <div id="optional-section" hidden>
-        <!-- populated in Task 8 -->
+        <div style="display:flex; flex-direction:column; gap:20px; padding-top:4px;">
+
+          <!-- End time -->
+          <div class="field">
+            <label class="field-label" for="end-time">${t('log.endTime')}</label>
+            <input type="time" id="end-time" class="field-input"
+              value="${episode.endTime
+                ? new Date(episode.endTime).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
+                : ''}" />
+          </div>
+
+          <!-- Tinnitus -->
+          <div>
+            <p class="section-label">${t('log.tinnitus')}</p>
+            <div id="tinnitus-group">
+              ${makePillGroup('log.tinnitus', SEVERITY_LABELS, episode.tinnitus)}
+            </div>
+          </div>
+
+          <!-- Ear blocked -->
+          <div>
+            <p class="section-label">${t('log.earBlocked')}</p>
+            <div id="ear-group">
+              ${makePillGroup('log.earBlocked', SEVERITY_LABELS, episode.earBlocked)}
+            </div>
+          </div>
+
+          <!-- Shoulder ache -->
+          <div>
+            <p class="section-label">${t('log.shoulderAche')}</p>
+            <div id="shoulder-group">
+              ${makePillGroup('log.shoulderAche', SEVERITY_LABELS, episode.shoulderAche)}
+            </div>
+          </div>
+
+          <!-- Fingers & toes cold -->
+          <div>
+            <p class="section-label">${t('log.coldExtremities')}</p>
+            <div id="cold-group">
+              ${makePillGroup('log.coldExtremities', SEVERITY_LABELS, episode.coldExtremities)}
+            </div>
+          </div>
+
+          <!-- Medical readings -->
+          <div style="border-top:1px solid var(--color-border); padding-top:16px;">
+            <p class="section-label" style="margin-bottom:12px;">${t('log.medicalReadings')}</p>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div class="field">
+                <label class="field-label" for="bp">${t('log.bloodPressure')}</label>
+                <input type="text" id="bp" class="field-input"
+                  placeholder="${t('log.bpPlaceholder')}"
+                  value="${episode.bloodPressure ?? ''}" inputmode="text" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="pulse">${t('log.pulse')}</label>
+                <input type="number" id="pulse" class="field-input"
+                  placeholder="—" value="${episode.pulse ?? ''}" inputmode="numeric" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="temp">${t('log.temperature')}</label>
+                <input type="number" id="temp" class="field-input" step="0.1"
+                  placeholder="—" value="${episode.temperature ?? ''}" inputmode="decimal" />
+              </div>
+              <div class="field">
+                <label class="field-label" for="air">${t('log.airPressure')}</label>
+                <input type="number" id="air" class="field-input"
+                  placeholder="—" value="${episode.airPressure ?? ''}" inputmode="numeric" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div style="border-top:1px solid var(--color-border); padding-top:16px;">
+            <label class="section-label" for="notes">${t('log.notes')}</label>
+            <textarea id="notes" class="field-input"
+              placeholder="${t('log.notesPlaceholder')}"
+              style="margin-top:8px;">${episode.notes ?? ''}</textarea>
+          </div>
+
+        </div>
       </div>
 
       ${isEdit ? `
@@ -129,6 +217,12 @@ function renderModal(episode) {
     e.currentTarget.textContent = t('log.optionalDetails') + (isOpen ? ' ▾' : ' ▴');
   });
 
+  // Optional symptom pill groups
+  bindPillGroup(document.getElementById('tinnitus-group'), '.pill', v => { tinnitus = v; });
+  bindPillGroup(document.getElementById('ear-group'),      '.pill', v => { earBlocked = v; });
+  bindPillGroup(document.getElementById('shoulder-group'), '.pill', v => { shoulderAche = v; });
+  bindPillGroup(document.getElementById('cold-group'),     '.pill', v => { coldExtremities = v; });
+
   // Save
   document.getElementById('modal-save').addEventListener('click', () => {
     const updates = { severity, ...collectOptionalFields() };
@@ -151,9 +245,26 @@ function renderModal(episode) {
   });
 }
 
-// Stub — returns empty object until Task 8 fills in the optional section
 function collectOptionalFields() {
-  return {};
+  // end time: combine startTime date with the selected time value
+  const endTimeInput = document.getElementById('end-time');
+  let endTime = null;
+  if (endTimeInput?.value) {
+    const [h, m] = endTimeInput.value.split(':').map(Number);
+    // Use startTime's date as the base (episode rarely spans midnight)
+    const base = new Date(currentEpisodeStart);
+    base.setHours(h, m, 0, 0);
+    endTime = base.toISOString();
+  }
+
+  const pulse       = parseFloat(document.getElementById('pulse')?.value) || null;
+  const temperature = parseFloat(document.getElementById('temp')?.value)  || null;
+  const airPressure = parseFloat(document.getElementById('air')?.value)   || null;
+  const bloodPressure = document.getElementById('bp')?.value.trim() || null;
+  const notes = document.getElementById('notes')?.value.trim() || null;
+
+  return { endTime, tinnitus, earBlocked, shoulderAche, coldExtremities,
+           bloodPressure, pulse, temperature, airPressure, notes };
 }
 
 // --- Public API ---
