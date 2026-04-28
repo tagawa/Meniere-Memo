@@ -3,12 +3,13 @@ import { renderHome }           from './home.js';
 import { t, getLang, setLang }  from './i18n.js';
 import { initLog, openNewLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
+import { renderDoctor }         from './doctor.js';
 
 function renderView(view) {
   switch (view) {
     case 'home':    renderHome(openNewLog, openEditLog); break;
     case 'history': renderHistory(openEditLog); break;
-    case 'doctor':  /* Task 11 */ break;
+    case 'doctor':  renderDoctor(); break;
   }
 }
 
