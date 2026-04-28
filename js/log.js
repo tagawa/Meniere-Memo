@@ -226,12 +226,15 @@ function renderModal(episode) {
   // Save
   document.getElementById('modal-save').addEventListener('click', () => {
     const updates = { severity, ...collectOptionalFields() };
+    // Capture before closeModal resets editingId
+    const statusKey = editingId ? 'log.episodeUpdated' : 'log.episodeSaved';
     if (editingId) {
       updateEpisode(editingId, updates);
     } else {
       addEpisode(createEpisode(updates));
     }
     closeModal();
+    document.getElementById('status-msg').textContent = t(statusKey);
     onSaved?.();
   });
 
@@ -239,6 +242,7 @@ function renderModal(episode) {
   document.getElementById('modal-delete')?.addEventListener('click', () => {
     if (confirm(t('log.confirmDelete'))) {
       deleteEpisode(editingId);
+      document.getElementById('status-msg').textContent = t('log.episodeDeleted');
       closeModal();
       onSaved?.();
     }
