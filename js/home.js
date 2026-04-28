@@ -1,19 +1,20 @@
-import { t } from './i18n.js';
+import { t, getLang } from './i18n.js';
 import { getEpisodes } from './store.js';
-import { formatDuration } from './stats.js';
+import { formatDuration, calcEpisodeDuration } from './stats.js';
 
-// Formats a date string for display: "Mon 28 Apr · 14:32"
+// Formats a date string for display: "Mon 28 Apr · 14:32" (locale-aware)
 function formatDateTime(isoString) {
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en-GB';
   const d = new Date(isoString);
-  return d.toLocaleDateString('en-GB', {
+  return d.toLocaleDateString(locale, {
     weekday: 'short', day: 'numeric', month: 'short'
-  }) + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  }) + ' · ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
 }
 
 function episodeSummary(ep) {
   const parts = [];
-  if (ep.endTime) {
-    const mins = Math.round((new Date(ep.endTime) - new Date(ep.startTime)) / 60000);
+  const mins = calcEpisodeDuration(ep);
+  if (mins !== null) {
     parts.push(formatDuration(mins));
   }
   if (ep.tinnitus)    parts.push(t('log.tinnitus'));

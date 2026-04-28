@@ -17,6 +17,12 @@ export function calcAverageDuration(episodes) {
   return Math.round(totalMs / withDuration.length / 60000);
 }
 
+// Returns duration in minutes for a single episode, or null if no endTime
+export function calcEpisodeDuration(episode) {
+  if (!episode.endTime) return null;
+  return Math.round((new Date(episode.endTime) - new Date(episode.startTime)) / 60000);
+}
+
 export function formatDuration(minutes) {
   if (minutes === null) return '—';
   if (minutes < 60) return `${minutes}m`;
