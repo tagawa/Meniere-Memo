@@ -45,7 +45,7 @@ const SEVERITY_LABELS = [
 function openModal() {
   const modal = document.getElementById('log-modal');
   modal.hidden = false;
-  modal.querySelector('#modal-sheet').focus?.();
+  modal.querySelector('#modal-sheet').focus();
   document.body.style.overflow = 'hidden';
 }
 
@@ -109,13 +109,14 @@ function renderModal(episode) {
 
   // Severity pills
   let severity = episode.severity;
-  bindPillGroup(document.getElementById('severity-group'), '.pill', v => {
-    severity = v ?? 'mild'; // severity is required; default to mild if somehow deselected
-    // Keep at least one selected
+  const severityGroup = document.getElementById('severity-group');
+  bindPillGroup(severityGroup, '.pill', v => {
     if (!v) {
-      const pills = document.querySelectorAll('#severity-group .pill');
-      pills[0].setAttribute('aria-pressed', 'true');
+      // Severity is required — keep first pill selected
+      severityGroup.querySelectorAll('.pill')[0].setAttribute('aria-pressed', 'true');
       severity = 'mild';
+    } else {
+      severity = v;
     }
   });
 
@@ -161,6 +162,11 @@ export function initLog(onSavedCallback) {
 
   // Close on backdrop click
   document.getElementById('modal-backdrop').addEventListener('click', closeModal);
+
+  // Close on Escape key (WCAG requirement for role="dialog")
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !document.getElementById('log-modal').hidden) closeModal();
+  });
 }
 
 export function openNewLog() {
