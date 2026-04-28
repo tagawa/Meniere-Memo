@@ -54,7 +54,8 @@ input, textarea {
 #app {
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: 100vh;
+  height: 100dvh; /* override with dvh where supported (Safari 15.4+) */
   max-width: 480px;
   margin: 0 auto;
 }
@@ -358,6 +359,7 @@ textarea.field-input {
   right: 0;
   background: var(--color-white);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+  max-height: 90vh;
   max-height: 90dvh;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;

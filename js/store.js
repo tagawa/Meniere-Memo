@@ -33,7 +33,7 @@ export function deleteEpisode(id) {
 
 export function createEpisode(fields = {}) {
   return {
-    id:              crypto.randomUUID(),
+    id:              crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36),
     startTime:       new Date().toISOString(),
     endTime:         null,
     severity:        'mild',
