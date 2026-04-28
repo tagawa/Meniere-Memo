@@ -28,8 +28,6 @@ function formatDateRange(episodes) {
   return `${fmt(min)} – ${fmt(max)}`;
 }
 
-// Defined for completeness per spec; rendering uses calcSymptomFrequency which returns keyed objects
-const SYMPTOM_KEYS = ['tinnitus', 'earBlocked', 'shoulderAche', 'coldExtremities'];
 const SYMPTOM_I18N = {
   tinnitus:        'doctor.tinnitus',
   earBlocked:      'doctor.earBlocked',

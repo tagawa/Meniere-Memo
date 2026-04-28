@@ -2,6 +2,14 @@ const SEVERITY_SCORE = { mild: 1, moderate: 2, severe: 3 };
 // Index 0 unused; round(1)=mild, round(2)=moderate, round(3)=severe
 const SCORE_SEVERITY = ['mild', 'mild', 'moderate', 'severe'];
 
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 export function calcAverageSeverity(episodes) {
   if (!episodes.length) return null;
   const sum = episodes.reduce((acc, e) => acc + SEVERITY_SCORE[e.severity], 0);
@@ -53,10 +61,10 @@ export function formatEpisodeNotes(episode) {
   if (episode.earBlocked)      parts.push(`Ear blocked: ${episode.earBlocked}`);
   if (episode.shoulderAche)    parts.push(`Shoulder ache: ${episode.shoulderAche}`);
   if (episode.coldExtremities) parts.push(`Cold extremities: ${episode.coldExtremities}`);
-  if (episode.bloodPressure)   parts.push(`BP: ${episode.bloodPressure}`);
+  if (episode.bloodPressure)   parts.push(`BP: ${escHtml(episode.bloodPressure)}`);
   if (episode.pulse)           parts.push(`Pulse: ${episode.pulse}`);
   if (episode.temperature)     parts.push(`Temp: ${episode.temperature}°C`);
   if (episode.airPressure)     parts.push(`Air: ${episode.airPressure}hPa`);
-  if (episode.notes)           parts.push(episode.notes);
+  if (episode.notes)           parts.push(escHtml(episode.notes));
   return parts.join(' · ') || '—';
 }
