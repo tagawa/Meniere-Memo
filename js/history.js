@@ -2,6 +2,14 @@ import { t, getLang } from './i18n.js';
 import { getEpisodes } from './store.js';
 import { formatDuration, calcEpisodeDuration } from './stats.js';
 
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 let onEpisodeClick; // set by renderHistory caller
 let currentPeriod = '4wk';
 
@@ -20,7 +28,7 @@ function episodeSummary(ep) {
   if (ep.tinnitus)     parts.push(t('log.tinnitus'));
   if (ep.earBlocked)   parts.push(t('log.earBlocked'));
   if (ep.shoulderAche) parts.push(t('log.shoulderAche'));
-  if (ep.notes)        parts.push(ep.notes);
+  if (ep.notes)        parts.push(escHtml(ep.notes));
   return parts.join(' · ') || '—';
 }
 
@@ -33,6 +41,9 @@ function buildChart(episodes, period) {
   thisMonday.setDate(now.getDate() - daysToMonday);
   thisMonday.setHours(0, 0, 0, 0);
 
+  // Compute locale once before bucket creation
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en-GB';
+
   let buckets;
   if (weeksCount) {
     buckets = Array.from({ length: weeksCount }, (_, i) => {
@@ -40,7 +51,7 @@ function buildChart(episodes, period) {
       start.setDate(thisMonday.getDate() - (weeksCount - 1 - i) * 7);
       const end = new Date(start);
       end.setDate(start.getDate() + 7);
-      return { start, end, count: 0, label: `${start.getDate()} ${start.toLocaleString('en-GB', { month: 'short' })}` };
+      return { start, end, count: 0, label: `${start.getDate()} ${start.toLocaleString(locale, { month: 'short' })}` };
     });
   } else {
     // All time: group into weeks dynamically
@@ -56,7 +67,7 @@ function buildChart(episodes, period) {
       start.setDate(earliest.getDate() + i * 7);
       const end = new Date(start);
       end.setDate(start.getDate() + 7);
-      return { start, end, count: 0, label: `${start.getDate()} ${start.toLocaleString('en-GB', { month: 'short' })}` };
+      return { start, end, count: 0, label: `${start.getDate()} ${start.toLocaleString(locale, { month: 'short' })}` };
     });
   }
 
