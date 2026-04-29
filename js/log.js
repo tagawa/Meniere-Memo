@@ -4,6 +4,7 @@ import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes } 
 let onSaved;      // callback to re-render the current view after save
 let editingId = null; // null = new episode, string = editing existing
 let currentEpisodeStart = null;
+let triggerElement = null; // element that triggered modal open — restore focus on close (WCAG 2.4.3)
 // Optional field state — reset each time modal opens
 let tinnitus, earBlocked, shoulderAche, coldExtremities;
 
@@ -46,6 +47,7 @@ const SEVERITY_LABELS = [
 
 // --- Modal open/close ---
 function openModal() {
+  triggerElement = document.activeElement;
   const modal = document.getElementById('log-modal');
   modal.hidden = false;
   modal.querySelector('#modal-sheet').focus();
@@ -57,6 +59,8 @@ function closeModal() {
   modal.hidden = true;
   document.body.style.overflow = '';
   editingId = null;
+  triggerElement?.focus();
+  triggerElement = null;
 }
 
 // --- Render modal content ---
