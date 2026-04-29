@@ -30,16 +30,20 @@ function bindPillGroup(container, selector, onSelect) {
     pill.addEventListener('click', () => {
       const group = pill.closest('.pill-group');
       const wasPressed = pill.getAttribute('aria-pressed') === 'true';
-      // deselect all in group
       group.querySelectorAll('.pill').forEach(p => p.setAttribute('aria-pressed', 'false'));
-      // toggle this one (tap again to deselect)
-      pill.setAttribute('aria-pressed', wasPressed ? 'false' : 'true');
-      onSelect(wasPressed ? null : pill.dataset.value);
+      if (wasPressed) {
+        // Tapping the already-selected pill deselects back to null (not recorded)
+        onSelect(null);
+      } else {
+        pill.setAttribute('aria-pressed', 'true');
+        onSelect(pill.dataset.value); // 'none', 'mild', 'moderate', or 'severe'
+      }
     });
   });
 }
 
 const SEVERITY_LABELS = [
+  { value: 'none',     i18nKey: 'log.none' },
   { value: 'mild',     i18nKey: 'log.mild' },
   { value: 'moderate', i18nKey: 'log.moderate' },
   { value: 'severe',   i18nKey: 'log.severe' },

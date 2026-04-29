@@ -16,9 +16,9 @@ function episodeSummary(ep) {
   const parts = [];
   const mins = calcEpisodeDuration(ep);
   if (mins !== null) parts.push(formatDuration(mins));
-  if (ep.tinnitus)     parts.push(t('log.tinnitus'));
-  if (ep.earBlocked)   parts.push(t('log.earBlocked'));
-  if (ep.shoulderAche) parts.push(t('log.shoulderAche'));
+  if (ep.tinnitus     && ep.tinnitus     !== 'none') parts.push(t('log.tinnitus'));
+  if (ep.earBlocked   && ep.earBlocked   !== 'none') parts.push(t('log.earBlocked'));
+  if (ep.shoulderAche && ep.shoulderAche !== 'none') parts.push(t('log.shoulderAche'));
   return parts.join(' · ') || '—';
 }
 
@@ -35,6 +35,7 @@ export function renderHome(onLogClick, onEpisodeClick) {
 
   view.innerHTML = `
     <button class="btn-log" id="log-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       ${t('home.logButton')}
     </button>
 

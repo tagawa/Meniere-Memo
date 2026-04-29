@@ -6,11 +6,12 @@ const strings = {
     'nav.doctor':           'Doctor',
     'home.logButton':       'Log Episode',
     'home.recentEpisodes':  'Recent Episodes',
-    'home.noEpisodes':      'No episodes yet. Tap Log Episode to start.',
+    'home.noEpisodes':      'No episodes yet.<br>Tap "Log Episode" to start.',
     'log.title':            'Log Episode',
     'log.editTitle':        'Edit Episode',
     'log.startTime':        'Start time',
     'log.severity':         'Dizziness severity',
+    'log.none':             'None',
     'log.mild':             'Mild',
     'log.moderate':         'Moderate',
     'log.severe':           'Severe',
@@ -47,7 +48,7 @@ const strings = {
     'doctor.30d':           '30 days',
     'doctor.90d':           '90 days',
     'doctor.all':           'All',
-    'doctor.print':         'Print / Save PDF',
+    'doctor.print':         'Print / PDF',
     'doctor.episodes':      'Episodes',
     'doctor.avgSeverity':   'Avg severity',
     'doctor.avgDuration':   'Avg duration',
@@ -71,11 +72,12 @@ const strings = {
     'nav.doctor':           '医師用',
     'home.logButton':       '発作を記録',
     'home.recentEpisodes':  '最近の発作',
-    'home.noEpisodes':      'まだ記録がありません。',
+    'home.noEpisodes':      'まだ記録がありません。<br>「発作の記録」をタップして始めましょう。',
     'log.title':            '発作を記録',
     'log.editTitle':        '発作を編集',
     'log.startTime':        '開始時刻',
     'log.severity':         'めまいの重症度',
+    'log.none':             'なし',
     'log.mild':             '軽度',
     'log.moderate':         '中度',
     'log.severe':           '重度',
@@ -112,7 +114,7 @@ const strings = {
     'doctor.30d':           '30日',
     'doctor.90d':           '90日',
     'doctor.all':           'すべて',
-    'doctor.print':         '印刷・PDF保存',
+    'doctor.print':         '印刷・PDF',
     'doctor.episodes':      '発作数',
     'doctor.avgSeverity':   '平均重症度',
     'doctor.avgDuration':   '平均時間',
@@ -131,7 +133,8 @@ const strings = {
   },
 };
 
-let currentLang = localStorage.getItem('meniere_lang') || 'en';
+const storedLang = localStorage.getItem('meniere_lang');
+let currentLang = storedLang ?? (navigator.language?.startsWith('ja') ? 'ja' : 'en');
 
 export function t(key) {
   return strings[currentLang]?.[key] ?? strings.en?.[key] ?? key;

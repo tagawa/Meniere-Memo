@@ -11,6 +11,8 @@ function quickLog() {
   addEpisode(createEpisode());
   document.getElementById('status-msg').textContent = t('log.episodeSaved');
   renderView('home');
+  // Flash the new card so the user sees it was added
+  document.querySelector('#view-home .episode-card')?.classList.add('episode-card--new');
 }
 
 function renderView(view) {
@@ -19,6 +21,12 @@ function renderView(view) {
     case 'history': renderHistory(openEditLog); break;
     case 'doctor':  renderDoctor(); break;
   }
+}
+
+function updateStaticI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
 }
 
 function initLangToggle() {
@@ -32,12 +40,14 @@ function initLangToggle() {
   btn.addEventListener('click', () => {
     setLang(getLang() === 'en' ? 'ja' : 'en');
     updateBtn();
+    updateStaticI18n();
     const activeTab = document.querySelector('.tab.active');
     renderView(activeTab?.dataset.view ?? 'home');
   });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  updateStaticI18n();
   initLog(() => {
     // re-render current view after save/delete
     const activeTab = document.querySelector('.tab.active');

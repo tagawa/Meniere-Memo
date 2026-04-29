@@ -1,7 +1,6 @@
-const CACHE = 'meniere-v6';
+const CACHE = 'meniere-v20';
 const SHELL = [
   '/',
-  '/index.html',
   '/manifest.json',
   '/css/app.css',
   '/js/app.js',
@@ -35,7 +34,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Cache-first: serve from cache, fall back to network
+  // Network-first for navigation so HTML updates land immediately
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('/')));
+    return;
+  }
+  // Cache-first for static assets (JS, CSS, icons)
   e.respondWith(
     caches.match(e.request).then(cached => cached ?? fetch(e.request))
   );

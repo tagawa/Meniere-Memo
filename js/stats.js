@@ -11,7 +11,8 @@ function escHtml(s) {
 }
 
 export function calcAverageSeverity(episodes) {
-  const withSeverity = episodes.filter(e => e.severity);
+  // 'none' and null are excluded — only scored severities count
+  const withSeverity = episodes.filter(e => e.severity && e.severity !== 'none');
   if (!withSeverity.length) return null;
   const sum = withSeverity.reduce((acc, e) => acc + SEVERITY_SCORE[e.severity], 0);
   return SCORE_SEVERITY[Math.round(sum / withSeverity.length)];
@@ -44,7 +45,8 @@ export function calcSymptomFrequency(episodes) {
   const keys = ['tinnitus', 'earBlocked', 'shoulderAche', 'coldExtremities'];
   return keys.map(key => ({
     key,
-    recorded: episodes.filter(e => e[key] !== null).length,
+    // Count only episodes where the symptom was present (mild/moderate/severe), not 'none' or null
+    recorded: episodes.filter(e => e[key] && e[key] !== 'none').length,
     total:    episodes.length,
   }));
 }

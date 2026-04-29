@@ -31,6 +31,14 @@ assert.strictEqual(
   calcAverageSeverity([{ severity: null }, { severity: 'severe' }, { severity: 'severe' }]),
   'severe', 'null severity episodes skipped in average'
 );
+assert.strictEqual(
+  calcAverageSeverity([{ severity: 'none' }, { severity: 'none' }]),
+  null, 'all none severity → null (none is not a scored severity)'
+);
+assert.strictEqual(
+  calcAverageSeverity([{ severity: 'none' }, { severity: 'mild' }]),
+  'mild', 'none severity episodes skipped in average'
+);
 console.log('✓ calcAverageSeverity');
 
 // calcAverageDuration
@@ -64,6 +72,17 @@ assert.strictEqual(freq.find(f => f.key === 'shoulderAche').recorded,    2, 'sho
 assert.strictEqual(freq.find(f => f.key === 'coldExtremities').recorded, 1, 'coldExtremities 1/3');
 assert.strictEqual(freq[0].total, 3, 'total = 3');
 console.log('✓ calcSymptomFrequency');
+
+// calcSymptomFrequency — 'none' is not counted as a symptom occurrence
+const freqWithNone = calcSymptomFrequency([
+  { tinnitus: 'none', earBlocked: 'mild', shoulderAche: null, coldExtremities: 'none' },
+  { tinnitus: 'mild', earBlocked: 'none', shoulderAche: null, coldExtremities: null   },
+]);
+assert.strictEqual(freqWithNone.find(f => f.key === 'tinnitus').recorded,        1, 'none tinnitus not counted');
+assert.strictEqual(freqWithNone.find(f => f.key === 'earBlocked').recorded,      1, 'none earBlocked not counted');
+assert.strictEqual(freqWithNone.find(f => f.key === 'shoulderAche').recorded,    0, 'null shoulderAche = 0');
+assert.strictEqual(freqWithNone.find(f => f.key === 'coldExtremities').recorded, 0, 'none coldExtremities = 0');
+console.log('✓ calcSymptomFrequency — none not counted');
 
 // filterByPeriod
 const old    = { startTime: new Date(Date.now() - 100 * 86400000).toISOString() };

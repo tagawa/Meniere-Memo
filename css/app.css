@@ -27,6 +27,9 @@
   --header-height: 52px;
 }
 
+/* === Base font size === */
+html { font-size: 18px; }
+
 /* === Reset === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -144,7 +147,7 @@ input, textarea {
   outline-offset: -3px;
 }
 
-.tab span:first-child { font-size: 1.3rem; }
+.tab span:first-child { display: flex; align-items: center; justify-content: center; }
 
 /* === Severity Pills (Mild / Moderate / Severe) === */
 .pill-group {
@@ -186,6 +189,12 @@ input, textarea {
   background: var(--color-severe);
   color: var(--color-white);
   border-color: var(--color-severe);
+}
+
+.pill[aria-pressed="true"].pill--none {
+  background: var(--color-text-secondary);
+  color: var(--color-white);
+  border-color: var(--color-text-secondary);
 }
 
 /* === Severity Badge (history list) === */
@@ -250,8 +259,8 @@ input, textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 140px;
-  height: 140px;
+  width: 160px;
+  height: 160px;
   border-radius: 50%;
   background: var(--color-accent);
   color: var(--color-white);
@@ -260,16 +269,18 @@ input, textarea {
   line-height: 1.25;
   text-align: center;
   margin: 0 auto var(--space-xl);
-  box-shadow: 0 4px 20px rgba(21, 87, 176, 0.4);
+  box-shadow: 0 6px 16px rgba(21, 87, 176, 0.5), 0 12px 40px rgba(21, 87, 176, 0.3);
   transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
 }
+
+
 .btn-log:focus-visible {
   outline: 3px solid var(--color-accent);
   outline-offset: 4px;
 }
 .btn-log:active {
   background: #0e3f7a;
-  box-shadow: 0 1px 4px rgba(21, 87, 176, 0.25);
+  box-shadow: 0 2px 6px rgba(21, 87, 176, 0.3);
   transform: scale(0.92);
 }
 
@@ -338,6 +349,17 @@ textarea.field-input {
   flex: 1;
   height: 1px;
   background: var(--color-border);
+}
+
+/* Brief highlight when a new episode card is created */
+@keyframes episode-highlight {
+  0%, 35% { background: #bfdbfe; transform: scaleY(1.04); transform-origin: top; }
+  50%     { transform: scaleY(1); }
+  100%    { background: transparent; }
+}
+
+.episode-card--new {
+  animation: episode-highlight 2.5s ease-out forwards;
 }
 
 /* === Episode Card (home + history list) === */
@@ -537,6 +559,7 @@ textarea.field-input {
   padding: var(--space-xl) var(--space-md);
   color: var(--color-text-muted);
   font-size: 0.9rem;
+  line-height: 2;
 }
 
 /* === Print styles === */

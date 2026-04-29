@@ -31,9 +31,9 @@ function episodeSummary(ep) {
   const parts = [];
   const dur = calcEpisodeDuration(ep);
   if (dur !== null) parts.push(formatDuration(dur));
-  if (ep.tinnitus)     parts.push(t('log.tinnitus'));
-  if (ep.earBlocked)   parts.push(t('log.earBlocked'));
-  if (ep.shoulderAche) parts.push(t('log.shoulderAche'));
+  if (ep.tinnitus     && ep.tinnitus     !== 'none') parts.push(t('log.tinnitus'));
+  if (ep.earBlocked   && ep.earBlocked   !== 'none') parts.push(t('log.earBlocked'));
+  if (ep.shoulderAche && ep.shoulderAche !== 'none') parts.push(t('log.shoulderAche'));
   if (ep.notes)        parts.push(escHtml(ep.notes));
   return parts.join(' · ') || '—';
 }
@@ -84,27 +84,30 @@ function buildChart(episodes, period) {
   });
 
   const maxCount = Math.max(...buckets.map(b => b.count), 1);
-  const barWidth = 100 / buckets.length;
+  const SVG_W = 360;
+  const barWidth = SVG_W / buckets.length;
   const chartHeight = 60;
+  // Only show every Nth label to avoid crowding when there are many bars
+  const labelEvery = buckets.length <= 6 ? 1 : buckets.length <= 13 ? 2 : Math.ceil(buckets.length / 6);
 
   const bars = buckets.map((b, i) => {
     const barH = b.count === 0 ? 2 : Math.round((b.count / maxCount) * chartHeight);
     const x = i * barWidth;
     return `
       <g role="img" aria-label="${b.label}: ${b.count} episode${b.count !== 1 ? 's' : ''}">
-        <rect x="${x + barWidth * 0.1}%" y="${chartHeight - barH}"
-          width="${barWidth * 0.8}%" height="${barH}"
+        <rect x="${x + barWidth * 0.1}" y="${chartHeight - barH}"
+          width="${barWidth * 0.8}" height="${barH}"
           fill="var(--color-accent)" rx="3" opacity="${b.count === 0 ? 0.2 : 1}" />
-        <text x="${x + barWidth / 2}%" y="${chartHeight + 14}"
-          text-anchor="middle" font-size="9" fill="var(--color-text-muted)"
+        ${i % labelEvery === 0 ? `<text x="${x + barWidth / 2}" y="${chartHeight + 14}"
+          text-anchor="middle" font-size="11" fill="var(--color-text-muted)"
           font-family="var(--font-sans)">
           ${b.label}
-        </text>
+        </text>` : ''}
       </g>`;
   }).join('');
 
   return `
-    <svg viewBox="0 0 100 ${chartHeight + 20}" preserveAspectRatio="none"
+    <svg viewBox="0 0 ${SVG_W} ${chartHeight + 20}" preserveAspectRatio="none"
       style="width:100%; height:${chartHeight + 20}px; display:block;"
       aria-label="${t('history.perWeek')}">
       ${bars}
