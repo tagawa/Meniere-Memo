@@ -104,8 +104,8 @@ export function renderDoctor() {
                 <tr>
                   <td style="white-space:nowrap; font-weight:600;">${formatDateTime(ep.startTime)}</td>
                   <td>
-                    <span class="severity-badge severity-badge--${ep.severity}">
-                      ${t(`log.${ep.severity}`)}
+                    <span class="severity-badge ${ep.severity ? `severity-badge--${ep.severity}` : 'severity-badge--none'}">
+                      ${ep.severity ? t(`log.${ep.severity}`) : t('log.noSeverity')}
                     </span>
                   </td>
                   <td style="white-space:nowrap;">${formatDuration(calcEpisodeDuration(ep))}</td>

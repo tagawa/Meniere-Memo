@@ -204,6 +204,24 @@ input, textarea {
 .severity-badge--mild     { background: #dcfce7; color: var(--color-mild); }
 .severity-badge--moderate { background: #fef3c7; color: var(--color-moderate); }
 .severity-badge--severe   { background: #fee2e2; color: var(--color-severe); }
+.severity-badge--none     { background: var(--color-surface); color: var(--color-text-muted); }
+
+/* Amber dot + text shown when dizziness severity has not been recorded */
+.episode-needs-details {
+  color: var(--color-moderate);
+  font-weight: 600;
+}
+.episode-needs-details::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-moderate);
+  border-radius: 50%;
+  margin-right: 5px;
+  vertical-align: middle;
+  margin-bottom: 1px;
+}
 
 /* === Buttons === */
 .btn-primary {
@@ -225,6 +243,35 @@ input, textarea {
 }
 
 .btn-primary:active { background: #0e3f7a; }
+
+/* Circular primary action button (home screen) */
+.btn-log {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: var(--color-white);
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  margin: 0 auto var(--space-xl);
+  box-shadow: 0 4px 20px rgba(21, 87, 176, 0.4);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.btn-log:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 4px;
+}
+.btn-log:active {
+  background: #0e3f7a;
+  box-shadow: 0 1px 4px rgba(21, 87, 176, 0.25);
+  transform: scale(0.92);
+}
 
 /* === Form Fields === */
 .field {

@@ -12,6 +12,10 @@ const {
 // calcAverageSeverity
 assert.strictEqual(calcAverageSeverity([]), null, 'empty → null');
 assert.strictEqual(
+  calcAverageSeverity([{ severity: null }, { severity: null }]),
+  null, 'all null severity → null'
+);
+assert.strictEqual(
   calcAverageSeverity([{ severity: 'mild' }, { severity: 'mild' }]),
   'mild', 'two mild → mild'
 );
@@ -22,6 +26,10 @@ assert.strictEqual(
 assert.strictEqual(
   calcAverageSeverity([{ severity: 'severe' }, { severity: 'severe' }]),
   'severe', 'two severe → severe'
+);
+assert.strictEqual(
+  calcAverageSeverity([{ severity: null }, { severity: 'severe' }, { severity: 'severe' }]),
+  'severe', 'null severity episodes skipped in average'
 );
 console.log('✓ calcAverageSeverity');
 

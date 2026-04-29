@@ -16,13 +16,16 @@ assert.deepStrictEqual(getEpisodes(), [], 'returns [] when nothing stored');
 console.log('✓ getEpisodes returns [] when empty');
 
 // createEpisode — default shape
+const epDefault = createEpisode();
+assert.ok(epDefault.id,                           'has id');
+assert.ok(epDefault.startTime,                    'has startTime');
+assert.strictEqual(epDefault.severity, null,      'severity null by default');
+assert.strictEqual(epDefault.tinnitus, null,      'tinnitus null by default');
+assert.strictEqual(epDefault.notes,    null,      'notes null by default');
+console.log('✓ createEpisode defaults — severity is null');
+
 const ep = createEpisode({ severity: 'moderate' });
-assert.ok(ep.id,                              'has id');
-assert.ok(ep.startTime,                       'has startTime');
-assert.strictEqual(ep.severity,    'moderate', 'severity set from arg');
-assert.strictEqual(ep.tinnitus,    null,        'tinnitus null by default');
-assert.strictEqual(ep.earBlocked,  null,        'earBlocked null by default');
-assert.strictEqual(ep.notes,       null,        'notes null by default');
+assert.strictEqual(ep.severity, 'moderate', 'severity overridden by arg');
 console.log('✓ createEpisode has correct shape');
 
 // addEpisode — stored and retrievable

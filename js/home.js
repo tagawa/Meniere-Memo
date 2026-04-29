@@ -12,15 +12,19 @@ function formatDateTime(isoString) {
 }
 
 function episodeSummary(ep) {
+  if (!ep.severity) return `<span class="episode-needs-details">${t('log.addDetails')}</span>`;
   const parts = [];
   const mins = calcEpisodeDuration(ep);
-  if (mins !== null) {
-    parts.push(formatDuration(mins));
-  }
-  if (ep.tinnitus)    parts.push(t('log.tinnitus'));
-  if (ep.earBlocked)  parts.push(t('log.earBlocked'));
+  if (mins !== null) parts.push(formatDuration(mins));
+  if (ep.tinnitus)     parts.push(t('log.tinnitus'));
+  if (ep.earBlocked)   parts.push(t('log.earBlocked'));
   if (ep.shoulderAche) parts.push(t('log.shoulderAche'));
-  return parts.join(' · ') || ep.severity;
+  return parts.join(' · ') || '—';
+}
+
+function severityBadge(ep) {
+  if (!ep.severity) return `<span class="severity-badge severity-badge--none">${t('log.noSeverity')}</span>`;
+  return `<span class="severity-badge severity-badge--${ep.severity}">${t(`log.${ep.severity}`)}</span>`;
 }
 
 export function renderHome(onLogClick, onEpisodeClick) {
@@ -30,7 +34,7 @@ export function renderHome(onLogClick, onEpisodeClick) {
     .slice(0, 3);
 
   view.innerHTML = `
-    <button class="btn-primary" id="log-btn" style="margin-bottom: 32px;">
+    <button class="btn-log" id="log-btn">
       ${t('home.logButton')}
     </button>
 
@@ -40,9 +44,7 @@ export function renderHome(onLogClick, onEpisodeClick) {
       ? `<p class="empty-state">${t('home.noEpisodes')}</p>`
       : recent.map(ep => `
           <button class="episode-card" data-id="${ep.id}">
-            <span class="severity-badge severity-badge--${ep.severity}">
-              ${t(`log.${ep.severity}`)}
-            </span>
+            ${severityBadge(ep)}
             <span class="episode-card-body">
               <span class="episode-card-date">${formatDateTime(ep.startTime)}</span>
               <span class="episode-card-summary">${episodeSummary(ep)}</span>

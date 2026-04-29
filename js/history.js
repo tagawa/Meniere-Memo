@@ -1,4 +1,9 @@
 import { t, getLang } from './i18n.js';
+
+function severityBadge(ep) {
+  if (!ep.severity) return `<span class="severity-badge severity-badge--none">${t('log.noSeverity')}</span>`;
+  return `<span class="severity-badge severity-badge--${ep.severity}">${t(`log.${ep.severity}`)}</span>`;
+}
 import { getEpisodes } from './store.js';
 import { formatDuration, calcEpisodeDuration } from './stats.js';
 
@@ -22,6 +27,7 @@ function formatDateTime(isoString) {
 }
 
 function episodeSummary(ep) {
+  if (!ep.severity) return `<span class="episode-needs-details">${t('log.addDetails')}</span>`;
   const parts = [];
   const dur = calcEpisodeDuration(ep);
   if (dur !== null) parts.push(formatDuration(dur));
@@ -132,9 +138,7 @@ export function renderHistory(onClickCallback) {
       ? `<p class="empty-state">${t('history.noEpisodes')}</p>`
       : allEpisodes.map(ep => `
           <button class="episode-card" data-id="${ep.id}">
-            <span class="severity-badge severity-badge--${ep.severity}">
-              ${t(`log.${ep.severity}`)}
-            </span>
+            ${severityBadge(ep)}
             <span class="episode-card-body">
               <span class="episode-card-date">${formatDateTime(ep.startTime)}</span>
               <span class="episode-card-summary">${episodeSummary(ep)}</span>

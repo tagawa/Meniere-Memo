@@ -11,9 +11,10 @@ function escHtml(s) {
 }
 
 export function calcAverageSeverity(episodes) {
-  if (!episodes.length) return null;
-  const sum = episodes.reduce((acc, e) => acc + SEVERITY_SCORE[e.severity], 0);
-  return SCORE_SEVERITY[Math.round(sum / episodes.length)];
+  const withSeverity = episodes.filter(e => e.severity);
+  if (!withSeverity.length) return null;
+  const sum = withSeverity.reduce((acc, e) => acc + SEVERITY_SCORE[e.severity], 0);
+  return SCORE_SEVERITY[Math.round(sum / withSeverity.length)];
 }
 
 export function calcAverageDuration(episodes) {

@@ -1,4 +1,4 @@
-const CACHE = 'meniere-v1';
+const CACHE = 'meniere-v6';
 const SHELL = [
   '/',
   '/index.html',

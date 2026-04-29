@@ -185,6 +185,8 @@ function renderModal(episode) {
               style="margin-top:8px;">${episode.notes ?? ''}</textarea>
           </div>
 
+          <button class="btn-primary" id="modal-save-bottom" style="margin-top:8px;">${t('log.save')}</button>
+
         </div>
       </div>
 
@@ -199,18 +201,10 @@ function renderModal(episode) {
     </div>
   `;
 
-  // Severity pills
+  // Severity pills — null is allowed (not yet recorded)
   let severity = episode.severity;
   const severityGroup = document.getElementById('severity-group');
-  bindPillGroup(severityGroup, '.pill', v => {
-    if (!v) {
-      // Severity is required — keep first pill selected
-      severityGroup.querySelectorAll('.pill')[0].setAttribute('aria-pressed', 'true');
-      severity = 'mild';
-    } else {
-      severity = v;
-    }
-  });
+  bindPillGroup(severityGroup, '.pill', v => { severity = v; });
 
   // Optional toggle
   document.getElementById('optional-toggle').addEventListener('click', e => {
@@ -227,8 +221,8 @@ function renderModal(episode) {
   bindPillGroup(document.getElementById('shoulder-group'), '.pill', v => { shoulderAche = v; });
   bindPillGroup(document.getElementById('cold-group'),     '.pill', v => { coldExtremities = v; });
 
-  // Save
-  document.getElementById('modal-save').addEventListener('click', () => {
+  // Save — shared handler for both save buttons
+  function handleSave() {
     const updates = { severity, ...collectOptionalFields() };
     // Capture before closeModal resets editingId
     const statusKey = editingId ? 'log.episodeUpdated' : 'log.episodeSaved';
@@ -240,7 +234,9 @@ function renderModal(episode) {
     closeModal();
     document.getElementById('status-msg').textContent = t(statusKey);
     onSaved?.();
-  });
+  }
+  document.getElementById('modal-save').addEventListener('click', handleSave);
+  document.getElementById('modal-save-bottom').addEventListener('click', handleSave);
 
   // Delete (edit mode only)
   document.getElementById('modal-delete')?.addEventListener('click', () => {
@@ -286,12 +282,6 @@ export function initLog(onSavedCallback) {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !document.getElementById('log-modal').hidden) closeModal();
   });
-}
-
-export function openNewLog() {
-  editingId = null;
-  openModal();
-  renderModal(createEpisode());
 }
 
 export function openEditLog(id) {

@@ -36,7 +36,7 @@ export function createEpisode(fields = {}) {
     id:              crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36),
     startTime:       new Date().toISOString(),
     endTime:         null,
-    severity:        'mild',
+    severity:        null,
     tinnitus:        null,
     earBlocked:      null,
     shoulderAche:    null,
