@@ -4,15 +4,23 @@ import { t, getLang, setLang }  from './i18n.js';
 import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
-import { addEpisode, createEpisode } from './store.js';
+import { addEpisode, createEpisode, updateEpisode } from './store.js';
+import { fetchAirPressure } from './weather.js';
 
 // One-tap log: saves immediately with just a timestamp, no modal
 function quickLog() {
-  addEpisode(createEpisode());
+  const episode = createEpisode();
+  addEpisode(episode);
   document.getElementById('status-msg').textContent = t('log.episodeSaved');
   renderView('home');
   // Flash the new card so the user sees it was added
   document.querySelector('#view-home .episode-card')?.classList.add('episode-card--new');
+  // Async: backfill air pressure — silently ignored on failure
+  fetchAirPressure().then(airPressure => {
+    if (airPressure === null) return;
+    updateEpisode(episode.id, { airPressure });
+    renderView('home');
+  });
 }
 
 function renderView(view) {

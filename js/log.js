@@ -1,5 +1,5 @@
 import { t } from './i18n.js';
-import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes } from './store.js';
+import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes, resolveEndTime } from './store.js';
 
 let onSaved;      // callback to re-render the current view after save
 let editingId = null; // null = new episode, string = editing existing
@@ -67,6 +67,13 @@ function closeModal() {
   triggerElement = null;
 }
 
+// Converts an ISO string to the YYYY-MM-DDTHH:MM format required by datetime-local inputs.
+function toDatetimeLocal(isoString) {
+  const d = new Date(isoString);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 // --- Render modal content ---
 function renderModal(episode) {
   currentEpisodeStart  = episode.startTime;
@@ -76,22 +83,19 @@ function renderModal(episode) {
   coldExtremities      = episode.coldExtremities;
 
   const isEdit = editingId !== null;
-  const startDate = new Date(episode.startTime);
-  const dateStr = startDate.toLocaleDateString('en-GB', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-  });
-  const timeStr = startDate.toLocaleTimeString('en-GB', {
-    hour: '2-digit', minute: '2-digit',
-  });
 
   document.getElementById('modal-content').innerHTML = `
     <div style="padding: 0 16px 24px;">
       <h2 id="log-modal-title" style="font-size:1.25rem; font-weight:700; margin-bottom:4px;">
         ${t(isEdit ? 'log.editTitle' : 'log.title')}
       </h2>
-      <p style="font-size:0.85rem; color:var(--color-text-muted); margin-bottom:24px;">
-        ${dateStr} · ${timeStr}
-      </p>
+
+      <div class="field" style="flex-direction:column; align-items:flex-start; gap:6px; margin-bottom:24px;">
+        <label class="field-label" for="start-time">${t('log.startTime')}</label>
+        <input type="datetime-local" id="start-time" class="field-input"
+          style="width:100%; text-align:left;"
+          value="${toDatetimeLocal(episode.startTime)}" />
+      </div>
 
       <p class="section-label">${t('log.severity')}</p>
       <div id="severity-group">
@@ -254,24 +258,32 @@ function renderModal(episode) {
 }
 
 function collectOptionalFields() {
-  // end time: combine startTime date with the selected time value
+  // Read new start time — may differ from original if user edited it
+  const startTimeInput = document.getElementById('start-time');
+  const newStartTime = startTimeInput?.value
+    ? new Date(startTimeInput.value).toISOString()
+    : currentEpisodeStart;
+
+  // End time: combine new start date with the selected time value
   const endTimeInput = document.getElementById('end-time');
   let endTime = null;
   if (endTimeInput?.value) {
     const [h, m] = endTimeInput.value.split(':').map(Number);
-    // Use startTime's date as the base (episode rarely spans midnight)
-    const base = new Date(currentEpisodeStart);
+    const base = new Date(newStartTime);
     base.setHours(h, m, 0, 0);
     endTime = base.toISOString();
   }
 
-  const pulse       = parseFloat(document.getElementById('pulse')?.value) || null;
-  const temperature = parseFloat(document.getElementById('temp')?.value)  || null;
-  const airPressure = parseFloat(document.getElementById('air')?.value)   || null;
-  const bloodPressure = document.getElementById('bp')?.value.trim() || null;
-  const notes = document.getElementById('notes')?.value.trim() || null;
+  // Silently clear endTime if start is now after end
+  endTime = resolveEndTime(newStartTime, endTime);
 
-  return { endTime, tinnitus, earBlocked, shoulderAche, coldExtremities,
+  const pulse         = parseFloat(document.getElementById('pulse')?.value) || null;
+  const temperature   = parseFloat(document.getElementById('temp')?.value)  || null;
+  const airPressure   = parseFloat(document.getElementById('air')?.value)   || null;
+  const bloodPressure = document.getElementById('bp')?.value.trim() || null;
+  const notes         = document.getElementById('notes')?.value.trim() || null;
+
+  return { startTime: newStartTime, endTime, tinnitus, earBlocked, shoulderAche, coldExtremities,
            bloodPressure, pulse, temperature, airPressure, notes };
 }
 

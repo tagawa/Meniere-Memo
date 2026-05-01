@@ -1,6 +1,6 @@
 {
-  "name": "MeniereMemo",
-  "short_name": "MeniereMemo",
+  "name": "Ménière Memo",
+  "short_name": "Ménière Memo",
   "description": "Log and review Menière's Disease episodes",
   "start_url": "/",
   "display": "standalone",

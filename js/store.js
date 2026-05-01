@@ -31,6 +31,12 @@ export function deleteEpisode(id) {
   saveAll(getEpisodes().filter(e => e.id !== id));
 }
 
+// Returns null if newStart is strictly after currentEnd (conflict); otherwise currentEnd unchanged.
+export function resolveEndTime(newStartTime, currentEndTime) {
+  if (!currentEndTime) return null;
+  return new Date(newStartTime) > new Date(currentEndTime) ? null : currentEndTime;
+}
+
 export function createEpisode(fields = {}) {
   return {
     id:              crypto.randomUUID?.() ?? Math.random().toString(36).slice(2) + Date.now().toString(36),

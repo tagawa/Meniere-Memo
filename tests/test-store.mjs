@@ -8,7 +8,7 @@ global.localStorage = {
   removeItem: k      => { delete storage[k]; },
 };
 // crypto.randomUUID() is available natively in Node 19+
-const { getEpisodes, addEpisode, updateEpisode, deleteEpisode, createEpisode }
+const { getEpisodes, addEpisode, updateEpisode, deleteEpisode, createEpisode, resolveEndTime }
   = await import('../js/store.js');
 
 // getEpisodes — empty store
@@ -55,5 +55,26 @@ deleteEpisode(ep.id);
 assert.strictEqual(getEpisodes().length, 1, 'one episode after delete');
 assert.ok(!getEpisodes().find(e => e.id === ep.id), 'deleted episode gone');
 console.log('✓ deleteEpisode removes correct record');
+
+// resolveEndTime — endTime conflict resolution
+const t1 = '2026-04-30T08:00:00.000Z';
+const t2 = '2026-04-30T09:00:00.000Z';
+const t3 = '2026-04-30T10:00:00.000Z';
+
+assert.strictEqual(resolveEndTime(t3, t2), null,
+  'clears endTime when newStart is after currentEnd');
+console.log('✓ resolveEndTime clears endTime when start is after end');
+
+assert.strictEqual(resolveEndTime(t1, t2), t2,
+  'preserves endTime when newStart is before currentEnd');
+console.log('✓ resolveEndTime preserves endTime when start is before end');
+
+assert.strictEqual(resolveEndTime(t2, t2), t2,
+  'preserves endTime when newStart equals currentEnd (equal is not a conflict)');
+console.log('✓ resolveEndTime preserves endTime when start equals end');
+
+assert.strictEqual(resolveEndTime(t3, null), null,
+  'returns null when currentEndTime is null');
+console.log('✓ resolveEndTime returns null when no endTime set');
 
 console.log('\nAll store tests passed.');
