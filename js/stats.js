@@ -2,14 +2,6 @@ const SEVERITY_SCORE = { mild: 1, moderate: 2, severe: 3 };
 // Index 0 unused; round(1)=mild, round(2)=moderate, round(3)=severe
 const SCORE_SEVERITY = ['mild', 'mild', 'moderate', 'severe'];
 
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 export function calcAverageSeverity(episodes) {
   // 'none' and null are excluded — only scored severities count
   const withSeverity = episodes.filter(e => e.severity && e.severity !== 'none');
@@ -42,7 +34,7 @@ export function formatDuration(minutes) {
 }
 
 export function calcSymptomFrequency(episodes) {
-  const keys = ['tinnitus', 'earBlocked', 'shoulderAche', 'coldExtremities'];
+  const keys = ['tinnitus', 'earBlocked', 'headache', 'shoulderAche', 'coldExtremities'];
   return keys.map(key => ({
     key,
     // Count only episodes where the symptom was present (mild/moderate/severe), not 'none' or null
@@ -58,16 +50,3 @@ export function filterByPeriod(episodes, period) {
   return episodes.filter(e => new Date(e.startTime).getTime() >= cutoff);
 }
 
-export function formatEpisodeNotes(episode) {
-  const parts = [];
-  if (episode.tinnitus)        parts.push(`Tinnitus: ${episode.tinnitus}`);
-  if (episode.earBlocked)      parts.push(`Ear blocked: ${episode.earBlocked}`);
-  if (episode.shoulderAche)    parts.push(`Shoulder ache: ${episode.shoulderAche}`);
-  if (episode.coldExtremities) parts.push(`Cold extremities: ${episode.coldExtremities}`);
-  if (episode.bloodPressure)   parts.push(`BP: ${escHtml(episode.bloodPressure)}`);
-  if (episode.pulse)           parts.push(`Pulse: ${episode.pulse}`);
-  if (episode.temperature)     parts.push(`Temp: ${episode.temperature}°C`);
-  if (episode.airPressure)     parts.push(`Air: ${episode.airPressure}hPa`);
-  if (episode.notes)           parts.push(escHtml(episode.notes));
-  return parts.join(' · ') || '—';
-}

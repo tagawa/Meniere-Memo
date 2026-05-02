@@ -1,12 +1,12 @@
 import { t } from './i18n.js';
-import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes, resolveEndTime } from './store.js';
+import { createEpisode, addEpisode, updateEpisode, deleteEpisode, getEpisodes, calcEndTime } from './store.js';
 
 let onSaved;      // callback to re-render the current view after save
 let editingId = null; // null = new episode, string = editing existing
 let currentEpisodeStart = null;
 let triggerElement = null; // element that triggered modal open — restore focus on close (WCAG 2.4.3)
 // Optional field state — reset each time modal opens
-let tinnitus, earBlocked, shoulderAche, coldExtremities;
+let tinnitus, earBlocked, headache, shoulderAche, coldExtremities;
 
 // --- Pill group helper ---
 function makePillGroup(name, labels, currentValue) {
@@ -79,6 +79,7 @@ function renderModal(episode) {
   currentEpisodeStart  = episode.startTime;
   tinnitus             = episode.tinnitus;
   earBlocked           = episode.earBlocked;
+  headache             = episode.headache;
   shoulderAche         = episode.shoulderAche;
   coldExtremities      = episode.coldExtremities;
 
@@ -138,6 +139,14 @@ function renderModal(episode) {
             <p class="section-label">${t('log.earBlocked')}</p>
             <div id="ear-group">
               ${makePillGroup('log.earBlocked', SEVERITY_LABELS, episode.earBlocked)}
+            </div>
+          </div>
+
+          <!-- Headache -->
+          <div>
+            <p class="section-label">${t('log.headache')}</p>
+            <div id="headache-group">
+              ${makePillGroup('log.headache', SEVERITY_LABELS, episode.headache)}
             </div>
           </div>
 
@@ -226,6 +235,7 @@ function renderModal(episode) {
   // Optional symptom pill groups
   bindPillGroup(document.getElementById('tinnitus-group'), '.pill', v => { tinnitus = v; });
   bindPillGroup(document.getElementById('ear-group'),      '.pill', v => { earBlocked = v; });
+  bindPillGroup(document.getElementById('headache-group'), '.pill', v => { headache = v; });
   bindPillGroup(document.getElementById('shoulder-group'), '.pill', v => { shoulderAche = v; });
   bindPillGroup(document.getElementById('cold-group'),     '.pill', v => { coldExtremities = v; });
 
@@ -264,18 +274,9 @@ function collectOptionalFields() {
     ? new Date(startTimeInput.value).toISOString()
     : currentEpisodeStart;
 
-  // End time: combine new start date with the selected time value
+  // Combine start with selected end time; auto-adjusts to next day if end < start (overnight)
   const endTimeInput = document.getElementById('end-time');
-  let endTime = null;
-  if (endTimeInput?.value) {
-    const [h, m] = endTimeInput.value.split(':').map(Number);
-    const base = new Date(newStartTime);
-    base.setHours(h, m, 0, 0);
-    endTime = base.toISOString();
-  }
-
-  // Silently clear endTime if start is now after end
-  endTime = resolveEndTime(newStartTime, endTime);
+  let endTime = calcEndTime(newStartTime, endTimeInput?.value ?? '');
 
   const pulse         = parseFloat(document.getElementById('pulse')?.value) || null;
   const temperature   = parseFloat(document.getElementById('temp')?.value)  || null;
@@ -283,7 +284,7 @@ function collectOptionalFields() {
   const bloodPressure = document.getElementById('bp')?.value.trim() || null;
   const notes         = document.getElementById('notes')?.value.trim() || null;
 
-  return { startTime: newStartTime, endTime, tinnitus, earBlocked, shoulderAche, coldExtremities,
+  return { startTime: newStartTime, endTime, tinnitus, earBlocked, headache, shoulderAche, coldExtremities,
            bloodPressure, pulse, temperature, airPressure, notes };
 }
 

@@ -4,7 +4,7 @@ import { formatDuration, calcEpisodeDuration } from './stats.js';
 
 // Formats a date string for display: "Mon 28 Apr · 14:32" (locale-aware)
 function formatDateTime(isoString) {
-  const locale = getLang() === 'ja' ? 'ja-JP' : 'en-GB';
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en';
   const d = new Date(isoString);
   return d.toLocaleDateString(locale, {
     weekday: 'short', day: 'numeric', month: 'short'
@@ -16,9 +16,11 @@ function episodeSummary(ep) {
   const parts = [];
   const mins = calcEpisodeDuration(ep);
   if (mins !== null) parts.push(formatDuration(mins));
-  if (ep.tinnitus     && ep.tinnitus     !== 'none') parts.push(t('log.tinnitus'));
-  if (ep.earBlocked   && ep.earBlocked   !== 'none') parts.push(t('log.earBlocked'));
-  if (ep.shoulderAche && ep.shoulderAche !== 'none') parts.push(t('log.shoulderAche'));
+  if (ep.tinnitus        && ep.tinnitus        !== 'none') parts.push(t('log.tinnitus'));
+  if (ep.earBlocked      && ep.earBlocked      !== 'none') parts.push(t('log.earBlocked'));
+  if (ep.headache        && ep.headache        !== 'none') parts.push(t('log.headache'));
+  if (ep.shoulderAche    && ep.shoulderAche    !== 'none') parts.push(t('log.shoulderAche'));
+  if (ep.coldExtremities && ep.coldExtremities !== 'none') parts.push(t('log.coldExtremities'));
   return parts.join(' · ') || '—';
 }
 

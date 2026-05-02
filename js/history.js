@@ -7,19 +7,12 @@ function severityBadge(ep) {
 import { getEpisodes } from './store.js';
 import { formatDuration, calcEpisodeDuration } from './stats.js';
 
-function escHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 let onEpisodeClick; // set by renderHistory caller
 let currentPeriod = '4wk';
 
 function formatDateTime(isoString) {
-  const locale = getLang() === 'ja' ? 'ja-JP' : 'en-GB';
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en';
   const d = new Date(isoString);
   return d.toLocaleDateString(locale, {
     weekday: 'short', day: 'numeric', month: 'short',
@@ -31,10 +24,11 @@ function episodeSummary(ep) {
   const parts = [];
   const dur = calcEpisodeDuration(ep);
   if (dur !== null) parts.push(formatDuration(dur));
-  if (ep.tinnitus     && ep.tinnitus     !== 'none') parts.push(t('log.tinnitus'));
-  if (ep.earBlocked   && ep.earBlocked   !== 'none') parts.push(t('log.earBlocked'));
-  if (ep.shoulderAche && ep.shoulderAche !== 'none') parts.push(t('log.shoulderAche'));
-  if (ep.notes)        parts.push(escHtml(ep.notes));
+  if (ep.tinnitus        && ep.tinnitus        !== 'none') parts.push(t('log.tinnitus'));
+  if (ep.earBlocked      && ep.earBlocked      !== 'none') parts.push(t('log.earBlocked'));
+  if (ep.headache        && ep.headache        !== 'none') parts.push(t('log.headache'));
+  if (ep.shoulderAche    && ep.shoulderAche    !== 'none') parts.push(t('log.shoulderAche'));
+  if (ep.coldExtremities && ep.coldExtremities !== 'none') parts.push(t('log.coldExtremities'));
   return parts.join(' · ') || '—';
 }
 
@@ -48,7 +42,7 @@ function buildChart(episodes, period) {
   thisMonday.setHours(0, 0, 0, 0);
 
   // Compute locale once before bucket creation
-  const locale = getLang() === 'ja' ? 'ja-JP' : 'en-GB';
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en';
 
   let buckets;
   if (weeksCount) {
@@ -94,7 +88,7 @@ function buildChart(episodes, period) {
     const barH = b.count === 0 ? 2 : Math.round((b.count / maxCount) * chartHeight);
     const x = i * barWidth;
     return `
-      <g role="img" aria-label="${b.label}: ${b.count} episode${b.count !== 1 ? 's' : ''}">
+      <g role="img" aria-label="${b.label}: ${b.count} ${t(b.count === 1 ? 'common.episode' : 'common.episodes')}">
         <rect x="${x + barWidth * 0.1}" y="${chartHeight - barH}"
           width="${barWidth * 0.8}" height="${barH}"
           fill="var(--color-accent)" rx="3" opacity="${b.count === 0 ? 0.2 : 1}" />

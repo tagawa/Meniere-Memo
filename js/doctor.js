@@ -1,4 +1,4 @@
-import { t } from './i18n.js';
+import { t, getLang } from './i18n.js';
 import { getEpisodes } from './store.js';
 import {
   calcAverageSeverity,
@@ -6,31 +6,54 @@ import {
   formatDuration,
   calcSymptomFrequency,
   filterByPeriod,
-  formatEpisodeNotes,
   calcEpisodeDuration,
 } from './stats.js';
 
-let currentPeriod = '30';
-
-function formatDateTime(isoString) {
-  const d = new Date(isoString);
-  return d.toLocaleDateString('en-GB', {
-    day: 'numeric', month: 'short', year: 'numeric',
-  }) + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
-function formatDateRange(episodes) {
+export function formatEpisodeNotes(episode) {
+  const parts = [];
+  if (episode.tinnitus)        parts.push(`${t('log.tinnitus')}: ${t(`log.${episode.tinnitus}`)}`);
+  if (episode.earBlocked)      parts.push(`${t('log.earBlocked')}: ${t(`log.${episode.earBlocked}`)}`);
+  if (episode.headache)        parts.push(`${t('log.headache')}: ${t(`log.${episode.headache}`)}`);
+  if (episode.shoulderAche)    parts.push(`${t('log.shoulderAche')}: ${t(`log.${episode.shoulderAche}`)}`);
+  if (episode.coldExtremities) parts.push(`${t('log.coldExtremities')}: ${t(`log.${episode.coldExtremities}`)}`);
+  if (episode.bloodPressure)   parts.push(`${t('log.bloodPressure')}: ${escHtml(episode.bloodPressure)}`);
+  if (episode.pulse)           parts.push(`${t('log.pulse')}: ${episode.pulse}`);
+  if (episode.temperature)     parts.push(`${t('log.temperature')}: ${episode.temperature}`);
+  if (episode.airPressure)     parts.push(`${t('log.airPressure')}: ${episode.airPressure}`);
+  if (episode.notes)           parts.push(escHtml(episode.notes));
+  return parts.join(' · ') || '—';
+}
+
+let currentPeriod = '30';
+
+function formatDateTime(isoString, locale) {
+  const d = new Date(isoString);
+  return d.toLocaleDateString(locale, {
+    day: 'numeric', month: 'short', year: 'numeric',
+  }) + ' ' + d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDateRange(episodes, locale) {
   if (!episodes.length) return '';
   const dates = episodes.map(e => new Date(e.startTime));
   const min = new Date(Math.min(...dates));
   const max = new Date(Math.max(...dates));
-  const fmt = d => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const fmt = d => d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
   return `${fmt(min)} – ${fmt(max)}`;
 }
 
 const SYMPTOM_I18N = {
   tinnitus:        'doctor.tinnitus',
   earBlocked:      'doctor.earBlocked',
+  headache:        'doctor.headache',
   shoulderAche:    'doctor.shoulderAche',
   coldExtremities: 'doctor.coldExtremities',
 };
@@ -41,10 +64,11 @@ export function renderDoctor() {
     .sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
   const episodes = filterByPeriod(allEpisodes, currentPeriod);
 
+  const locale = getLang() === 'ja' ? 'ja-JP' : 'en';
   const avgSev = calcAverageSeverity(episodes);
   const avgDur = calcAverageDuration(episodes);
   const freq   = calcSymptomFrequency(episodes);
-  const today  = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  const today  = new Date().toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' });
 
   view.innerHTML = `
     <div class="doctor-controls">
@@ -68,7 +92,7 @@ export function renderDoctor() {
       <div style="text-align:center; padding-bottom:16px; border-bottom:2px solid var(--color-border); margin-bottom:20px;">
         <h2 style="font-size:1.4rem; font-weight:800; margin-bottom:4px;">${t('doctor.title')}</h2>
         <p style="font-size:0.85rem; color:var(--color-text-muted);">
-          ${formatDateRange(episodes)} · ${episodes.length} episode${episodes.length !== 1 ? 's' : ''}
+          ${formatDateRange(episodes, locale)} · ${episodes.length} ${t(episodes.length === 1 ? 'common.episode' : 'common.episodes')}
         </p>
       </div>
 
@@ -103,7 +127,7 @@ export function renderDoctor() {
             <tbody>
               ${[...episodes].reverse().map(ep => `
                 <tr>
-                  <td style="white-space:nowrap; font-weight:600;">${formatDateTime(ep.startTime)}</td>
+                  <td style="white-space:nowrap; font-weight:600;">${formatDateTime(ep.startTime, locale)}</td>
                   <td>
                     <span class="severity-badge ${ep.severity ? `severity-badge--${ep.severity}` : 'severity-badge--none'}">
                       ${ep.severity ? t(`log.${ep.severity}`) : t('log.noSeverity')}

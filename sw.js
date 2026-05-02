@@ -1,4 +1,4 @@
-const CACHE = 'meniere-v20';
+const CACHE = 'meniere-v21';
 const SHELL = [
   '/',
   '/manifest.json',
@@ -12,6 +12,7 @@ const SHELL = [
   '/js/log.js',
   '/js/history.js',
   '/js/doctor.js',
+  '/js/weather.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];

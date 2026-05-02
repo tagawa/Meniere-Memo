@@ -4,8 +4,22 @@ import { t, getLang, setLang }  from './i18n.js';
 import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
-import { addEpisode, createEpisode, updateEpisode } from './store.js';
+import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
 import { fetchAirPressure } from './weather.js';
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.setAttribute('role', 'alert');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  el.offsetHeight; // force layout so transition fires
+  el.classList.add('toast--visible');
+  setTimeout(() => {
+    el.classList.remove('toast--visible');
+    el.addEventListener('transitionend', () => el.remove(), { once: true });
+  }, 4000);
+}
 
 // One-tap log: saves immediately with just a timestamp, no modal
 function quickLog() {
@@ -55,6 +69,7 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  setWriteErrorHandler(() => showToast(t('store.writeError')));
   updateStaticI18n();
   initLog(() => {
     // re-render current view after save/delete

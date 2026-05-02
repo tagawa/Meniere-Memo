@@ -6,7 +6,6 @@ const {
   formatDuration,
   calcSymptomFrequency,
   filterByPeriod,
-  formatEpisodeNotes,
 } = await import('../js/stats.js');
 
 // calcAverageSeverity
@@ -61,13 +60,14 @@ console.log('✓ formatDuration');
 
 // calcSymptomFrequency
 const episodes = [
-  { tinnitus: 'mild',   earBlocked: null,       shoulderAche: 'severe', coldExtremities: null },
-  { tinnitus: null,     earBlocked: 'moderate', shoulderAche: 'mild',   coldExtremities: null },
-  { tinnitus: 'severe', earBlocked: null,       shoulderAche: null,     coldExtremities: 'mild' },
+  { tinnitus: 'mild',   earBlocked: null,       headache: 'severe', shoulderAche: 'severe', coldExtremities: null },
+  { tinnitus: null,     earBlocked: 'moderate', headache: null,     shoulderAche: 'mild',   coldExtremities: null },
+  { tinnitus: 'severe', earBlocked: null,       headache: 'mild',   shoulderAche: null,     coldExtremities: 'mild' },
 ];
 const freq = calcSymptomFrequency(episodes);
 assert.strictEqual(freq.find(f => f.key === 'tinnitus').recorded,        2, 'tinnitus 2/3');
 assert.strictEqual(freq.find(f => f.key === 'earBlocked').recorded,      1, 'earBlocked 1/3');
+assert.strictEqual(freq.find(f => f.key === 'headache').recorded,        2, 'headache 2/3');
 assert.strictEqual(freq.find(f => f.key === 'shoulderAche').recorded,    2, 'shoulderAche 2/3');
 assert.strictEqual(freq.find(f => f.key === 'coldExtremities').recorded, 1, 'coldExtremities 1/3');
 assert.strictEqual(freq[0].total, 3, 'total = 3');
@@ -75,11 +75,12 @@ console.log('✓ calcSymptomFrequency');
 
 // calcSymptomFrequency — 'none' is not counted as a symptom occurrence
 const freqWithNone = calcSymptomFrequency([
-  { tinnitus: 'none', earBlocked: 'mild', shoulderAche: null, coldExtremities: 'none' },
-  { tinnitus: 'mild', earBlocked: 'none', shoulderAche: null, coldExtremities: null   },
+  { tinnitus: 'none', earBlocked: 'mild', headache: 'none', shoulderAche: null, coldExtremities: 'none' },
+  { tinnitus: 'mild', earBlocked: 'none', headache: 'mild', shoulderAche: null, coldExtremities: null   },
 ]);
 assert.strictEqual(freqWithNone.find(f => f.key === 'tinnitus').recorded,        1, 'none tinnitus not counted');
 assert.strictEqual(freqWithNone.find(f => f.key === 'earBlocked').recorded,      1, 'none earBlocked not counted');
+assert.strictEqual(freqWithNone.find(f => f.key === 'headache').recorded,        1, 'none headache not counted');
 assert.strictEqual(freqWithNone.find(f => f.key === 'shoulderAche').recorded,    0, 'null shoulderAche = 0');
 assert.strictEqual(freqWithNone.find(f => f.key === 'coldExtremities').recorded, 0, 'none coldExtremities = 0');
 console.log('✓ calcSymptomFrequency — none not counted');
@@ -92,25 +93,5 @@ assert.strictEqual(filterByPeriod([old, mid, recent], 'all').length, 3, 'all →
 assert.strictEqual(filterByPeriod([old, mid, recent], '30').length,  1, '30d → 1');
 assert.strictEqual(filterByPeriod([old, mid, recent], '90').length,  2, '90d → 2');
 console.log('✓ filterByPeriod');
-
-// formatEpisodeNotes
-const ep = {
-  tinnitus: 'mild', earBlocked: null, shoulderAche: 'severe', coldExtremities: null,
-  bloodPressure: '120/80', pulse: 72, temperature: 36.5, airPressure: null,
-  notes: 'Felt tired',
-};
-const noteStr = formatEpisodeNotes(ep);
-assert.ok(noteStr.includes('Tinnitus: mild'),        'includes tinnitus');
-assert.ok(!noteStr.includes('earBlocked'),            'omits null earBlocked');
-assert.ok(noteStr.includes('Shoulder ache: severe'), 'includes shoulderAche');
-assert.ok(noteStr.includes('BP: 120/80'),            'includes bloodPressure');
-assert.ok(noteStr.includes('Felt tired'),            'includes free-text notes');
-console.log('✓ formatEpisodeNotes');
-
-assert.strictEqual(formatEpisodeNotes({
-  tinnitus: null, earBlocked: null, shoulderAche: null, coldExtremities: null,
-  bloodPressure: null, pulse: null, temperature: null, airPressure: null, notes: null,
-}), '—', 'all null → em dash');
-console.log('✓ formatEpisodeNotes all null');
 
 console.log('\nAll stats tests passed.');

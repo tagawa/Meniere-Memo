@@ -565,6 +565,30 @@ textarea.field-input {
   line-height: 2;
 }
 
+/* === Error toast === */
+.toast {
+  position: fixed;
+  top: calc(var(--header-height) + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: var(--color-severe);
+  color: var(--color-white);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: calc(100% - 32px);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* === Print styles === */
 @media print {
   .app-header, .tab-bar, .doctor-controls { display: none !important; }
