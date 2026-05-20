@@ -44,4 +44,23 @@ global.fetch = makeFetch(true, { current_condition: [] });
 assert.strictEqual(await fetchAirPressure(), null, 'returns null for empty current_condition');
 console.log('✓ returns null for empty current_condition array');
 
+// --- initWeather / getCachedPressure ---
+const { getCachedPressure, initWeather } = await import('../js/weather.js');
+
+// getCachedPressure returns null before initWeather is called
+assert.strictEqual(getCachedPressure(), null, 'getCachedPressure returns null before initWeather');
+console.log('✓ getCachedPressure returns null before initWeather is called');
+
+// initWeather sets cachedPressure on success
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1015' }] });
+await initWeather();
+assert.strictEqual(getCachedPressure(), 1015, 'initWeather sets cachedPressure on success');
+console.log('✓ initWeather sets cachedPressure to fetched value on success');
+
+// initWeather sets cachedPressure to null on failure
+global.fetch = async () => { throw new Error('network'); };
+await initWeather();
+assert.strictEqual(getCachedPressure(), null, 'initWeather sets cachedPressure to null on failure');
+console.log('✓ initWeather sets cachedPressure to null on fetch failure');
+
 console.log('\nAll weather tests passed.');

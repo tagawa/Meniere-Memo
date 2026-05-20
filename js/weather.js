@@ -12,3 +12,14 @@ export async function fetchAirPressure() {
     return null;
   }
 }
+
+let cachedPressure = null;
+
+export function getCachedPressure() {
+  return cachedPressure;
+}
+
+// Call once on app load. Populates cachedPressure for synchronous use in quickLog().
+export async function initWeather() {
+  cachedPressure = await fetchAirPressure();
+}
