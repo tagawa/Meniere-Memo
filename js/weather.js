@@ -20,6 +20,7 @@ export function getCachedPressure() {
 }
 
 // Call once on app load. Populates cachedPressure for synchronous use in quickLog().
+// Calling again mid-session resets cachedPressure to null during the in-flight request.
 export async function initWeather() {
   cachedPressure = await fetchAirPressure();
 }

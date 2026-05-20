@@ -35,7 +35,7 @@ function quickLog() {
     if (airPressure === null) return;
     updateEpisode(episode.id, { airPressure });
     renderView('home');
-  });
+  }).catch(() => {}); // fetchAirPressure never rejects, but belt-and-suspenders
 }
 
 function renderView(view) {
