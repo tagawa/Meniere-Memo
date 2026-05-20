@@ -5,7 +5,7 @@ import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
 import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
-import { fetchAirPressure } from './weather.js';
+import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
 
 function showToast(msg) {
   const el = document.createElement('div');
@@ -21,15 +21,16 @@ function showToast(msg) {
   }, 4000);
 }
 
-// One-tap log: saves immediately with just a timestamp, no modal
+// One-tap log: saves immediately with timestamp + cached pressure, no modal
 function quickLog() {
   const episode = createEpisode();
+  episode.airPressure = getCachedPressure(); // synchronous — committed with the episode
   addEpisode(episode);
   document.getElementById('status-msg').textContent = t('log.episodeSaved');
   renderView('home');
   // Flash the new card so the user sees it was added
   document.querySelector('#view-home .episode-card')?.classList.add('episode-card--new');
-  // Async: backfill air pressure — silently ignored on failure
+  // Best-effort fresh fetch — overwrites with more current reading if it resolves
   fetchAirPressure().then(airPressure => {
     if (airPressure === null) return;
     updateEpisode(episode.id, { airPressure });
@@ -69,6 +70,7 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initWeather(); // fire-and-forget: pre-populates cachedPressure before user taps log
   setWriteErrorHandler(() => showToast(t('store.writeError')));
   updateStaticI18n();
   initLog(() => {
