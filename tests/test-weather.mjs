@@ -57,10 +57,10 @@ await initWeather();
 assert.strictEqual(getCachedPressure(), 1015, 'initWeather sets cachedPressure on success');
 console.log('✓ initWeather sets cachedPressure to fetched value on success');
 
-// initWeather sets cachedPressure to null on failure
+// initWeather retains cachedPressure on failure (does not wipe last known value)
 global.fetch = async () => { throw new Error('network'); };
 await initWeather();
-assert.strictEqual(getCachedPressure(), null, 'initWeather sets cachedPressure to null on failure');
-console.log('✓ initWeather sets cachedPressure to null on fetch failure');
+assert.strictEqual(getCachedPressure(), 1015, 'initWeather retains cachedPressure on fetch failure');
+console.log('✓ initWeather retains cachedPressure on fetch failure');
 
 console.log('\nAll weather tests passed.');
