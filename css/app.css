@@ -595,13 +595,51 @@ textarea.field-input {
   align-items: center;
   gap: var(--space-sm);
   padding: 0 var(--space-md);
-  height: 52px;
+  height: 72px;
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
   background: var(--color-white);
 }
 
 .pressure-strip[hidden] { display: none; }
+
+.pressure-strip-chart {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+@keyframes pressure-pulse {
+  0%, 100% { opacity: 0.25; }
+  50%       { opacity: 0.7; }
+}
+
+.pressure-placeholder {
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.pressure-placeholder-line {
+  width: 100%;
+  height: 2px;
+  background: var(--color-border);
+  border-radius: 1px;
+  animation: pressure-pulse 1.5s ease-in-out infinite;
+}
+
+.pressure-strip-days {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pressure-strip-day {
+  font-size: 0.6rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  flex: 1;
+}
 
 .pressure-strip-value {
   font-size: 0.75rem;
