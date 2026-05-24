@@ -52,5 +52,12 @@ setLang('ja');
 assert.strictEqual(t('pressure.today'), '今日',  'JA: pressure.today');
 console.log('✓ pressure.today — EN and JA');
 
+// home.seeAll key
+setLang('en');
+assert.strictEqual(t('home.seeAll'), 'See all episodes', 'EN: home.seeAll');
+setLang('ja');
+assert.strictEqual(t('home.seeAll'), 'すべてのエピソードを見る', 'JA: home.seeAll');
+console.log('✓ home.seeAll — EN and JA');
+
 setLang('en');
 console.log('All i18n tests passed.');
