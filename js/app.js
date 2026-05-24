@@ -6,6 +6,7 @@ import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
 import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
+import { renderPressureStrip } from './pressure-strip.js';
 
 function showToast(msg) {
   const el = document.createElement('div');
@@ -39,10 +40,20 @@ function quickLog() {
 }
 
 function renderView(view) {
+  const strip = document.getElementById('pressure-strip');
   switch (view) {
-    case 'home':    renderHome(quickLog, openEditLog); break;
-    case 'history': renderHistory(openEditLog); break;
-    case 'doctor':  renderDoctor(); break;
+    case 'home':
+      renderHome(quickLog, openEditLog);
+      renderPressureStrip(); // shows or hides based on data availability
+      break;
+    case 'history':
+      renderHistory(openEditLog);
+      strip.hidden = true;
+      break;
+    case 'doctor':
+      renderDoctor();
+      strip.hidden = true;
+      break;
   }
 }
 
@@ -70,7 +81,11 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  initWeather(); // fire-and-forget: pre-populates cachedPressure before user taps log
+  // Render strip now that forecast data is available, if home tab is still active.
+  initWeather().then(() => {
+    const activeTab = document.querySelector('.tab.active');
+    if ((activeTab?.dataset.view ?? 'home') === 'home') renderPressureStrip();
+  });
   setWriteErrorHandler(() => showToast(t('store.writeError')));
   updateStaticI18n();
   initLog(() => {
