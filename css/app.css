@@ -631,7 +631,6 @@ textarea.field-input {
 
 .pressure-strip-days {
   display: flex;
-  justify-content: space-between;
 }
 
 .pressure-strip-day {

@@ -6,7 +6,7 @@ import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
 import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
-import { renderPressureStrip, renderPressureStripLoading } from './pressure-strip.js';
+import { renderPressureStrip } from './pressure-strip.js';
 
 function showToast(msg) {
   const el = document.createElement('div');
@@ -81,7 +81,6 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  renderPressureStripLoading(); // show strip immediately while forecast loads
   initWeather().then(() => {
     const activeTab = document.querySelector('.tab.active');
     if ((activeTab?.dataset.view ?? 'home') === 'home') renderPressureStrip();
