@@ -31,9 +31,10 @@ function severityBadge(ep) {
 
 export function renderHome(onLogClick, onEpisodeClick) {
   const view = document.getElementById('view-home');
-  const recent = getEpisodes()
-    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-    .slice(0, 3);
+  // Sort all episodes newest-first; use the full list for count, slice for display
+  const allEpisodes = getEpisodes()
+    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+  const recent = allEpisodes.slice(0, 3);
 
   view.innerHTML = `
     <button class="btn-log" id="log-btn">
@@ -55,6 +56,11 @@ export function renderHome(onLogClick, onEpisodeClick) {
             <span class="episode-card-arrow" aria-hidden="true">›</span>
           </button>`
         ).join('')
+    }
+
+    ${allEpisodes.length > 3
+      ? `<a href="#history" class="see-more-link">${t('home.seeAll')} →</a>`
+      : ''
     }
   `;
 
