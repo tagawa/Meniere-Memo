@@ -129,7 +129,7 @@ input, textarea {
   align-items: center;
   justify-content: center;
   gap: 2px;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--color-text-muted);
   min-height: 44px;
@@ -205,7 +205,7 @@ input, textarea {
   min-width: 64px;
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--radius-sm);
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 700;
   flex-shrink: 0;
 }
@@ -294,7 +294,7 @@ input, textarea {
 }
 
 .field-label {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--color-text-secondary);
   flex-shrink: 0;
 }
@@ -303,7 +303,7 @@ input, textarea {
   padding: var(--space-xs) var(--space-sm);
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: var(--color-text);
   background: var(--color-surface);
   text-align: right;
@@ -325,7 +325,7 @@ textarea.field-input {
 
 /* === Section Label === */
 .section-label {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -385,7 +385,7 @@ textarea.field-input {
 
 .episode-card-date {
   display: block;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--color-text);
 }
@@ -473,7 +473,7 @@ textarea.field-input {
 }
 
 .chart-period-btn {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-pill);
@@ -527,7 +527,7 @@ textarea.field-input {
 }
 
 .stat-label {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--color-text-muted);
   margin-top: 2px;
 }
@@ -540,7 +540,7 @@ textarea.field-input {
 }
 
 .summary-table th {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -561,7 +561,7 @@ textarea.field-input {
   text-align: center;
   padding: var(--space-xl) var(--space-md);
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: 1rem;
   line-height: 2;
 }
 
@@ -595,7 +595,7 @@ textarea.field-input {
   align-items: center;
   gap: var(--space-sm);
   padding: 0 var(--space-md);
-  height: 72px;
+  height: var(--tab-bar-height);
   border-top: 1px solid var(--color-border);
   box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.06); /* upward shadow — strip sits above scrolling content */
   flex-shrink: 0;
@@ -606,9 +606,21 @@ textarea.field-input {
 
 .pressure-strip-chart {
   flex: 1;
+  align-self: stretch; /* fill full 72px strip height so dividers can span it */
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 2px;
+  position: relative;
+}
+
+.pressure-day-divider {
+  position: absolute;
+  top: 6px;    /* equal gap from strip top/bottom border */
+  bottom: 6px;
+  width: 1px;
+  background: var(--color-border);
+  pointer-events: none;
 }
 
 @keyframes pressure-pulse {
@@ -635,14 +647,14 @@ textarea.field-input {
 }
 
 .pressure-strip-day {
-  font-size: 0.6rem;
+  font-size: 0.8rem;
   color: var(--color-text-muted);
   text-align: center;
   flex: 1;
 }
 
 .pressure-strip-value {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   white-space: nowrap;
@@ -650,9 +662,10 @@ textarea.field-input {
 }
 
 .pressure-sparkline {
-  flex: 1;
-  height: 28px;
   display: block;
+  width: 100%;   /* fill chart width in column flex context */
+  height: 32px;
+  flex-shrink: 0; /* don't shrink; flex: 1 removed so it stays at 28px */
   overflow: visible;
 }
 

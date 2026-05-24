@@ -56,7 +56,7 @@ export function renderPressureStrip() {
     return;
   }
 
-  const W = 240, H = 28;
+  const W = 240, H = 32;
   const min = Math.min(...forecast);
   const max = Math.max(...forecast);
   const range = max - min || 1; // avoid div-by-zero when all values are equal
@@ -82,13 +82,15 @@ export function renderPressureStrip() {
   const currentHpa = getCachedPressure();
   const valueLabel = currentHpa !== null ? `${currentHpa} hPa` : '';
 
+  // Day-boundary dividers are CSS divs (not SVG lines) so they span the full strip height,
+  // not just the 28px SVG viewBox. Position as % to align with the SVG x coordinates.
   strip.innerHTML = `
     <span class="pressure-strip-value">${valueLabel}</span>
     <div class="pressure-strip-chart">
+      ${forecast.length > 8  ? `<div class="pressure-day-divider" style="left:${(xOf(8)  / W * 100).toFixed(2)}%"></div>` : ''}
+      ${forecast.length > 16 ? `<div class="pressure-day-divider" style="left:${(xOf(16) / W * 100).toFixed(2)}%"></div>` : ''}
       <svg class="pressure-sparkline" viewBox="0 0 ${W} ${H}"
            aria-hidden="true" preserveAspectRatio="none">
-        ${forecast.length > 8  ? `<line x1="${xOf(8).toFixed(1)}"  y1="0" x2="${xOf(8).toFixed(1)}"  y2="${H}" stroke="var(--color-border)" stroke-width="0.75"/>` : ''}
-        ${forecast.length > 16 ? `<line x1="${xOf(16).toFixed(1)}" y1="0" x2="${xOf(16).toFixed(1)}" y2="${H}" stroke="var(--color-border)" stroke-width="0.75"/>` : ''}
         <polyline points="${points}" fill="none" stroke="var(--color-accent)"
                   stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
         <circle cx="${nowX}" cy="${nowY}" r="5" fill="var(--color-accent)"/>
