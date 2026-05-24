@@ -45,5 +45,12 @@ setLang('ja');
 assert.ok(t('store.writeError').length > 0,  'JA: store.writeError is non-empty');
 console.log('✓ store.writeError — EN and JA');
 
+// pressure.today key
+setLang('en');
+assert.strictEqual(t('pressure.today'), 'Today', 'EN: pressure.today');
+setLang('ja');
+assert.strictEqual(t('pressure.today'), '今日',  'JA: pressure.today');
+console.log('✓ pressure.today — EN and JA');
+
 setLang('en');
 console.log('All i18n tests passed.');

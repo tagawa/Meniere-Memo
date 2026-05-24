@@ -68,6 +68,7 @@ const strings = {
     'doctor.coldExtremities': 'Fingers & toes cold',
     'common.episode':         'episode',
     'common.episodes':        'episodes',
+    'pressure.today':         'Today',
     'store.writeError':       'Could not save — storage may be full.',
   },
   ja: {
@@ -139,6 +140,7 @@ const strings = {
     'doctor.coldExtremities': '手足の冷え',
     'common.episode':         '発作',
     'common.episodes':        '発作',
+    'pressure.today':         '今日',
     'store.writeError':       '保存できませんでした。ストレージがいっぱいかもしれません。',
   },
 };
