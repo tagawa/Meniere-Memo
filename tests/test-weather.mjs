@@ -63,4 +63,59 @@ await initWeather();
 assert.strictEqual(getCachedPressure(), 1015, 'initWeather retains cachedPressure on fetch failure');
 console.log('✓ initWeather retains cachedPressure on fetch failure');
 
+// --- getCachedForecast ---
+const { getCachedForecast } = await import('../js/weather.js');
+
+// getCachedForecast returns null before forecast data is loaded
+assert.strictEqual(getCachedForecast(), null, 'getCachedForecast returns null before initWeather sets forecast');
+console.log('✓ getCachedForecast returns null before forecast data is loaded');
+
+// initWeather sets cachedForecast from weather[].hourly
+const MOCK_FULL = {
+  current_condition: [{ pressure: '1013' }],
+  weather: [
+    { hourly: [
+      { pressure: '1010' }, { pressure: '1011' }, { pressure: '1012' }, { pressure: '1013' },
+      { pressure: '1014' }, { pressure: '1013' }, { pressure: '1012' }, { pressure: '1011' }
+    ]},
+    { hourly: [
+      { pressure: '1010' }, { pressure: '1009' }, { pressure: '1008' }, { pressure: '1007' },
+      { pressure: '1008' }, { pressure: '1009' }, { pressure: '1010' }, { pressure: '1011' }
+    ]},
+    { hourly: [
+      { pressure: '1012' }, { pressure: '1013' }, { pressure: '1014' }, { pressure: '1015' },
+      { pressure: '1016' }, { pressure: '1015' }, { pressure: '1014' }, { pressure: '1013' }
+    ]}
+  ]
+};
+global.fetch = makeFetch(true, MOCK_FULL);
+await initWeather();
+assert.deepStrictEqual(
+  getCachedForecast(),
+  [1010,1011,1012,1013,1014,1013,1012,1011,
+   1010,1009,1008,1007,1008,1009,1010,1011,
+   1012,1013,1014,1015,1016,1015,1014,1013],
+  'initWeather sets cachedForecast to 24 numeric pressure values'
+);
+console.log('✓ initWeather sets cachedForecast from weather[].hourly');
+
+// initWeather retains cachedForecast on fetch failure
+global.fetch = async () => { throw new Error('network'); };
+await initWeather();
+assert.deepStrictEqual(
+  getCachedForecast(),
+  [1010,1011,1012,1013,1014,1013,1012,1011,
+   1010,1009,1008,1007,1008,1009,1010,1011,
+   1012,1013,1014,1015,1016,1015,1014,1013],
+  'initWeather retains cachedForecast on fetch failure'
+);
+console.log('✓ initWeather retains cachedForecast on fetch failure');
+
+// initWeather handles missing weather field gracefully (no forecast set, cachedForecast unchanged)
+const prevForecast = getCachedForecast();
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1020' }] }); // no weather key
+await initWeather();
+assert.deepStrictEqual(getCachedForecast(), prevForecast, 'cachedForecast unchanged when weather field absent');
+console.log('✓ initWeather leaves cachedForecast unchanged when weather field is absent');
+
 console.log('\nAll weather tests passed.');
