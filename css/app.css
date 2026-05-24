@@ -71,6 +71,7 @@ input, textarea {
   height: var(--header-height);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* upward shadow — strip sits above scrolling content */
 }
 
 .app-title {
@@ -599,7 +600,7 @@ textarea.field-input {
   padding: 0 var(--space-md);
   height: var(--tab-bar-height);
   border-top: 1px solid var(--color-border);
-  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.06); /* upward shadow — strip sits above scrolling content */
+  box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1); /* upward shadow — strip sits above scrolling content */
   flex-shrink: 0;
   background: var(--color-white);
 }
