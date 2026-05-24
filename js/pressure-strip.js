@@ -4,8 +4,9 @@ import { t, getLang } from './i18n.js';
 // Returns [todayLabel, tomorrowAbbr, dayAfterAbbr] in the active language.
 // Weekday abbreviations come from the browser Intl API — no manual translation needed.
 function buildDayLabels() {
-  const locale = getLang() === 'ja' ? 'ja-JP' : 'en';
-  const fmt = { weekday: getLang() === 'ja' ? 'narrow' : 'short' };
+  const lang = getLang();
+  const locale = lang === 'ja' ? 'ja-JP' : 'en';
+  const fmt = { weekday: lang === 'ja' ? 'narrow' : 'short' };
   const today = new Date();
   const d1 = new Date(today); d1.setDate(today.getDate() + 1);
   const d2 = new Date(today); d2.setDate(today.getDate() + 2);
