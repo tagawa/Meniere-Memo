@@ -606,7 +606,7 @@ textarea.field-input {
 
 .pressure-strip-chart {
   flex: 1;
-  align-self: stretch; /* fill full 72px strip height so dividers can span it */
+  align-self: stretch; /* fill full strip height so dividers can span it */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -665,7 +665,7 @@ textarea.field-input {
   display: block;
   width: 100%;   /* fill chart width in column flex context */
   height: 32px;
-  flex-shrink: 0; /* don't shrink; flex: 1 removed so it stays at 28px */
+  flex-shrink: 0; /* don't grow; explicit height takes effect */
   overflow: visible;
 }
 
