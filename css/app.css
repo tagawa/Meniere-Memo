@@ -116,7 +116,9 @@ input, textarea {
 /* === Tab Bar === */
 .tab-bar {
   display: flex;
-  height: var(--tab-bar-height);
+  /* expand total height by safe-area-inset-bottom so the icon content area
+     stays at --tab-bar-height in PWA mode (otherwise padding eats into it) */
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
   padding-bottom: env(safe-area-inset-bottom);
