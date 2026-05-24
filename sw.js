@@ -1,4 +1,4 @@
-const CACHE = 'meniere-v24';
+const CACHE = 'meniere-v25';
 const SHELL = [
   '/',
   '/manifest.json',
