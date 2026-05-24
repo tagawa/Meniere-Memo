@@ -6,7 +6,7 @@ import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
 import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
-import { renderPressureStrip } from './pressure-strip.js';
+import { renderPressureStrip, renderPressureStripLoading } from './pressure-strip.js';
 
 function showToast(msg) {
   const el = document.createElement('div');
@@ -44,7 +44,7 @@ function renderView(view) {
   switch (view) {
     case 'home':
       renderHome(quickLog, openEditLog);
-      renderPressureStrip(); // shows or hides based on data availability
+      renderPressureStrip(); // shows sparkline when data available, loading state otherwise
       break;
     case 'history':
       renderHistory(openEditLog);
@@ -81,7 +81,7 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Render strip now that forecast data is available, if home tab is still active.
+  renderPressureStripLoading(); // show strip immediately while forecast loads
   initWeather().then(() => {
     const activeTab = document.querySelector('.tab.active');
     if ((activeTab?.dataset.view ?? 'home') === 'home') renderPressureStrip();
