@@ -59,7 +59,7 @@ export function renderHome(onLogClick, onEpisodeClick) {
     }
 
     ${allEpisodes.length > 3
-      ? `<a href="#history" class="see-more-link">${t('home.seeAll')} →</a>`
+      ? `<a href="#history" class="see-more-link">${t('home.seeAll')} <span aria-hidden="true">→</span></a>`
       : ''
     }
   `;
