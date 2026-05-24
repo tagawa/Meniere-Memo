@@ -589,6 +589,35 @@ textarea.field-input {
   transform: translateX(-50%) translateY(0);
 }
 
+/* === Pressure Strip === */
+.pressure-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 0 var(--space-md);
+  height: 52px;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+  background: var(--color-white);
+}
+
+.pressure-strip[hidden] { display: none; }
+
+.pressure-strip-value {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  min-width: 58px;
+}
+
+.pressure-sparkline {
+  flex: 1;
+  height: 28px;
+  display: block;
+  overflow: visible;
+}
+
 /* === Print styles === */
 @media print {
   .app-header, .tab-bar, .doctor-controls { display: none !important; }
