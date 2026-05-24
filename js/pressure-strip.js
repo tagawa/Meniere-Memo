@@ -4,6 +4,7 @@ import { getCachedForecast, getCachedPressure } from './weather.js';
 // Call after initWeather resolves and whenever the home tab becomes active.
 export function renderPressureStrip() {
   const strip = document.getElementById('pressure-strip');
+  if (!strip) return;
   const forecast = getCachedForecast();
 
   if (!forecast || forecast.length < 2) {
@@ -25,7 +26,8 @@ export function renderPressureStrip() {
 
   // "Now" marker: fractional index within the slot array.
   // Slot 0 = today 00:00 local; each slot = 3h. Clamp to array bounds.
-  const currentHour = new Date().getHours() + new Date().getMinutes() / 60;
+  const now = new Date();
+  const currentHour = now.getHours() + now.getMinutes() / 60;
   const nowIndex = Math.min(currentHour / 3, forecast.length - 1);
   const i0 = Math.floor(nowIndex);
   const i1 = Math.min(i0 + 1, forecast.length - 1);
