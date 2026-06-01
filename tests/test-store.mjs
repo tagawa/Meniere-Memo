@@ -9,7 +9,7 @@ global.localStorage = {
 };
 // crypto.randomUUID() is available natively in Node 19+
 const { getEpisodes, addEpisode, updateEpisode, deleteEpisode, createEpisode, resolveEndTime,
-        generateUuid, setWriteErrorHandler }
+        generateUuid, setWriteErrorHandler, migrateEpisodes }
   = await import('../js/store.js');
 
 // getEpisodes — empty store
@@ -140,5 +140,51 @@ assert.strictEqual(handlerCalled, true, 'error handler called on deleteEpisode f
 console.log('✓ deleteEpisode returns false and calls error handler on write failure');
 
 global.localStorage.setItem = origSetItem;
+
+// --- schemaVersion ---
+
+assert.strictEqual(createEpisode().schemaVersion, 1, 'createEpisode sets schemaVersion: 1');
+console.log('✓ createEpisode sets schemaVersion: 1');
+
+// Inject two unversioned episodes into storage for migration tests
+global.localStorage.setItem('meniere_episodes', JSON.stringify([
+  { id: 'migrate-a', startTime: '2026-01-01T00:00:00.000Z', severity: null },
+  { id: 'migrate-b', startTime: '2026-01-02T00:00:00.000Z', severity: 'mild' },
+]));
+
+migrateEpisodes();
+const afterMigrate = getEpisodes();
+assert.ok(afterMigrate.every(ep => ep.schemaVersion === 1),
+  'migrateEpisodes stamps all unversioned records with schemaVersion: 1');
+console.log('✓ migrateEpisodes stamps unversioned records');
+
+// Idempotency — calling twice produces the same result
+migrateEpisodes();
+assert.deepStrictEqual(getEpisodes(), afterMigrate, 'migrateEpisodes is idempotent');
+console.log('✓ migrateEpisodes is idempotent');
+
+// No-op when all records are already versioned
+global.localStorage.setItem('meniere_episodes', JSON.stringify([
+  { id: 'versioned', schemaVersion: 1, startTime: '2026-01-01T00:00:00.000Z' },
+]));
+migrateEpisodes();
+assert.strictEqual(getEpisodes()[0].schemaVersion, 1, 'no-op when all records versioned');
+console.log('✓ migrateEpisodes is a no-op when all records already versioned');
+
+// saveAll failure — error handler fires, storage left untouched
+let migrationErrorFired = false;
+setWriteErrorHandler(() => { migrationErrorFired = true; });
+global.localStorage.setItem('meniere_episodes', JSON.stringify([
+  { id: 'unversioned-for-fail', startTime: '2026-01-01T00:00:00.000Z' },
+]));
+const origSetItemForMigration = global.localStorage.setItem;
+global.localStorage.setItem = () => { throw new Error('QuotaExceeded'); };
+migrateEpisodes();
+assert.strictEqual(migrationErrorFired, true, 'writeErrorHandler called on migration failure');
+global.localStorage.setItem = origSetItemForMigration;
+assert.strictEqual(getEpisodes()[0].schemaVersion, undefined,
+  'storage left untouched after failed migration');
+console.log('✓ migrateEpisodes calls writeErrorHandler and leaves storage untouched on failure');
+setWriteErrorHandler(null);
 
 console.log('\nAll store tests passed.');

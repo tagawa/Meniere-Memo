@@ -4,7 +4,7 @@ import { t, getLang, setLang }  from './i18n.js';
 import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
-import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler } from './store.js';
+import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler, migrateEpisodes } from './store.js';
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
 import { renderPressureStrip } from './pressure-strip.js';
 
@@ -81,6 +81,7 @@ function initLangToggle() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  migrateEpisodes();
   initWeather().then(() => {
     const activeTab = document.querySelector('.tab.active');
     if ((activeTab?.dataset.view ?? 'home') === 'home') renderPressureStrip();
