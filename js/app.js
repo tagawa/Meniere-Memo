@@ -8,7 +8,7 @@ import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler, migrate
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
 import { renderPressureStrip } from './pressure-strip.js';
 
-function showToast(msg) {
+function showToast(msg, { assertive = false } = {}) {
   const el = document.createElement('div');
   el.className = 'toast';
   el.setAttribute('role', 'alert');
@@ -20,6 +20,14 @@ function showToast(msg) {
     el.classList.remove('toast--visible');
     el.addEventListener('transitionend', () => el.remove(), { once: true });
   }, 4000);
+
+  if (assertive) {
+    // Clear-then-set on next tick forces two DOM mutations, so screen readers
+    // re-announce even if the message text is identical to the previous one.
+    const region = document.getElementById('alert-msg');
+    region.textContent = '';
+    setTimeout(() => { region.textContent = msg; }, 0);
+  }
 }
 
 // One-tap log: saves immediately with timestamp + cached pressure, no modal
@@ -97,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeTab = document.querySelector('.tab.active');
     if ((activeTab?.dataset.view ?? 'home') === 'home') renderPressureStrip();
   });
-  setWriteErrorHandler(() => showToast(t('store.writeError')));
+  setWriteErrorHandler(() => showToast(t('store.writeError'), { assertive: true }));
   updateStaticI18n();
   initLog(() => {
     // re-render current view after save/delete

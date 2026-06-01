@@ -67,6 +67,10 @@
   <!-- Screen reader announcements -->
   <div id="status-msg" role="status" aria-live="polite" aria-atomic="true"
        style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;"></div>
+  <!-- Assertive region for error announcements (write failures). role="alert" and aria-live="assertive"
+       are redundant but kept for cross-AT reliability. -->
+  <div id="alert-msg" role="alert" aria-live="assertive" aria-atomic="true"
+       style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;"></div>
 
   <script type="module" src="js/app.js"></script>
 </body>
