@@ -47,7 +47,7 @@ export function renderHome(onLogClick, onEpisodeClick) {
     ${recent.length === 0
       ? `<p class="empty-state">${t('home.noEpisodes')}</p>`
       : recent.map(ep => `
-          <button class="episode-card" data-id="${ep.id}">
+          <button class="episode-card" data-id="${ep.id}" data-episode-id="${ep.id}">
             ${severityBadge(ep)}
             <span class="episode-card-body">
               <span class="episode-card-date">${formatDateTime(ep.startTime)}</span>

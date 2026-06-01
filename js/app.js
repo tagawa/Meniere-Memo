@@ -4,7 +4,7 @@ import { t, getLang, setLang }  from './i18n.js';
 import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
-import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler, migrateEpisodes } from './store.js';
+import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler, migrateEpisodes, getEpisodes } from './store.js';
 import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
 import { renderPressureStrip } from './pressure-strip.js';
 
@@ -24,19 +24,30 @@ function showToast(msg) {
 
 // One-tap log: saves immediately with timestamp + cached pressure, no modal
 function quickLog() {
+  // #2 — debounce: prevent double-tap creating two episodes
+  const btn = document.getElementById('log-btn');
+  btn.disabled = true;
+  setTimeout(() => { btn.disabled = false; }, 1000);
+
   const episode = createEpisode();
-  episode.airPressure = getCachedPressure(); // synchronous — committed with the episode
+  episode.airPressure = getCachedPressure();
   addEpisode(episode);
   document.getElementById('status-msg').textContent = t('log.episodeSaved');
   renderView('home');
-  // Flash the new card so the user sees it was added
-  document.querySelector('#view-home .episode-card')?.classList.add('episode-card--new');
-  // Best-effort fresh fetch — overwrites with more current reading if it resolves
+
+  // #6 — target the new card by ID rather than first-in-DOM-order
+  document.querySelector(`[data-episode-id="${episode.id}"]`)?.classList.add('episode-card--new');
+
+  // #3 — race guard: skip fresh-fetch update if user edited airPressure before it resolved
+  const originalPressure = episode.airPressure;
   fetchAirPressure().then(airPressure => {
     if (airPressure === null) return;
+    const current = getEpisodes().find(e => e.id === episode.id);
+    if (!current) return; // episode was deleted before fetch resolved
+    if (!Object.is(current.airPressure, originalPressure)) return; // user edited it
     updateEpisode(episode.id, { airPressure });
     renderView('home');
-  }).catch(() => {}); // fetchAirPressure never rejects, but belt-and-suspenders
+  }).catch(() => {});
 }
 
 function renderView(view) {

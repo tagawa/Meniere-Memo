@@ -7,6 +7,7 @@ global.localStorage = {
   setItem:    (k, v) => { store[k] = v; },
   removeItem: k      => { delete store[k]; },
 };
+global.document = { documentElement: { lang: '' } };
 
 const { setLang } = await import('../js/i18n.js');
 const { formatEpisodeNotes } = await import('../js/doctor.js');

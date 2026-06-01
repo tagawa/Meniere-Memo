@@ -149,6 +149,7 @@ const strings = {
 
 const storedLang = localStorage.getItem('meniere_lang');
 let currentLang = storedLang ?? (navigator.language?.startsWith('ja') ? 'ja' : 'en');
+document.documentElement.lang = currentLang;
 
 export function t(key) {
   return strings[currentLang]?.[key] ?? strings.en?.[key] ?? key;
@@ -157,6 +158,7 @@ export function t(key) {
 export function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('meniere_lang', lang);
+  document.documentElement.lang = lang;
 }
 
 export function getLang() {

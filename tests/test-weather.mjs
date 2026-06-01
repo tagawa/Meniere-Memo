@@ -118,4 +118,25 @@ await initWeather();
 assert.deepStrictEqual(getCachedForecast(), prevForecast, 'cachedForecast unchanged when weather field absent');
 console.log('✓ initWeather leaves cachedForecast unchanged when weather field is absent');
 
+// AbortController regression — abort errors handled same as network errors
+global.fetch = async () => {
+  const err = new Error('The operation was aborted');
+  err.name = 'AbortError';
+  throw err;
+};
+assert.strictEqual(await fetchAirPressure(), null,
+  'fetchAirPressure returns null when fetch is aborted');
+console.log('✓ fetchAirPressure returns null when aborted');
+
+const pressureBeforeAbort = getCachedPressure();
+global.fetch = async () => {
+  const err = new Error('The operation was aborted');
+  err.name = 'AbortError';
+  throw err;
+};
+await initWeather();
+assert.strictEqual(getCachedPressure(), pressureBeforeAbort,
+  'initWeather retains cached pressure when fetch is aborted');
+console.log('✓ initWeather retains cached pressure when aborted');
+
 console.log('\nAll weather tests passed.');

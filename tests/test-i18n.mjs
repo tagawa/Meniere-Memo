@@ -1,11 +1,11 @@
 import assert from 'assert';
 
-// Mock localStorage before importing the module
 const store = {};
 global.localStorage = {
   getItem: k => store[k] ?? null,
   setItem: (k, v) => { store[k] = v; },
 };
+global.document = { documentElement: { lang: '' } };
 
 const { t, setLang, getLang } = await import('../js/i18n.js');
 
@@ -60,4 +60,14 @@ assert.strictEqual(t('home.seeAll'), 'すべてのエピソードを見る', 'JA
 console.log('✓ home.seeAll — EN and JA');
 
 setLang('en');
+
+// setLang updates document.documentElement.lang
+setLang('ja');
+assert.strictEqual(global.document.documentElement.lang, 'ja',
+  'setLang("ja") updates document.documentElement.lang to "ja"');
+setLang('en');
+assert.strictEqual(global.document.documentElement.lang, 'en',
+  'setLang("en") updates document.documentElement.lang to "en" (not hardcoded)');
+console.log('✓ setLang updates document.documentElement.lang');
+
 console.log('All i18n tests passed.');
