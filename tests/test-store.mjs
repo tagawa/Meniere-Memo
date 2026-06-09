@@ -143,8 +143,11 @@ global.localStorage.setItem = origSetItem;
 
 // --- schemaVersion ---
 
-assert.strictEqual(createEpisode().schemaVersion, 1, 'createEpisode sets schemaVersion: 1');
-console.log('✓ createEpisode sets schemaVersion: 1');
+assert.strictEqual(createEpisode().schemaVersion, 2, 'createEpisode sets schemaVersion: 2');
+console.log('✓ createEpisode sets schemaVersion: 2');
+
+assert.strictEqual(createEpisode().humidity, null, 'createEpisode sets humidity: null');
+console.log('✓ createEpisode sets humidity: null');
 
 // Inject two unversioned episodes into storage for migration tests
 global.localStorage.setItem('meniere_episodes', JSON.stringify([
@@ -154,22 +157,56 @@ global.localStorage.setItem('meniere_episodes', JSON.stringify([
 
 migrateEpisodes();
 const afterMigrate = getEpisodes();
-assert.ok(afterMigrate.every(ep => ep.schemaVersion === 1),
-  'migrateEpisodes stamps all unversioned records with schemaVersion: 1');
-console.log('✓ migrateEpisodes stamps unversioned records');
+assert.ok(afterMigrate.every(ep => ep.schemaVersion === 2),
+  'migrateEpisodes stamps all unversioned records with schemaVersion: 2');
+assert.ok(afterMigrate.every(ep => ep.humidity === null),
+  'migrateEpisodes adds humidity: null to unversioned records');
+console.log('✓ migrateEpisodes stamps unversioned records and adds humidity');
 
-// Idempotency — calling twice produces the same result
-migrateEpisodes();
-assert.deepStrictEqual(getEpisodes(), afterMigrate, 'migrateEpisodes is idempotent');
-console.log('✓ migrateEpisodes is idempotent');
-
-// No-op when all records are already versioned
+// v1 → v2 migration: adds humidity field to schemaVersion 1 episodes
 global.localStorage.setItem('meniere_episodes', JSON.stringify([
-  { id: 'versioned', schemaVersion: 1, startTime: '2026-01-01T00:00:00.000Z' },
+  { id: 'v1-a', schemaVersion: 1, startTime: '2026-01-01T00:00:00.000Z' },
+  { id: 'v1-b', schemaVersion: 1, startTime: '2026-01-02T00:00:00.000Z', humidity: 72 },
 ]));
 migrateEpisodes();
-assert.strictEqual(getEpisodes()[0].schemaVersion, 1, 'no-op when all records versioned');
-console.log('✓ migrateEpisodes is a no-op when all records already versioned');
+const afterV1Migration = getEpisodes();
+assert.strictEqual(afterV1Migration[0].schemaVersion, 2, 'v1 episode migrated to schemaVersion 2');
+assert.strictEqual(afterV1Migration[0].humidity, null, 'v1 episode gets humidity: null when absent');
+assert.strictEqual(afterV1Migration[1].schemaVersion, 2, 'v1 episode with humidity migrated to schemaVersion 2');
+assert.strictEqual(afterV1Migration[1].humidity, 72, 'v1 episode retains existing humidity value');
+console.log('✓ migrateEpisodes migrates v1 episodes to v2, adding humidity if absent');
+
+// Idempotency — calling twice on already-v2 records produces the same result
+migrateEpisodes();
+assert.deepStrictEqual(getEpisodes(), afterV1Migration, 'migrateEpisodes is idempotent on v2 records');
+console.log('✓ migrateEpisodes is idempotent on v2 records');
+
+// Mixed store — unversioned, v1 (no humidity), v1 (with humidity), and v2 all present together
+global.localStorage.setItem('meniere_episodes', JSON.stringify([
+  { id: 'mix-unversioned', startTime: '2026-01-01T00:00:00.000Z' },
+  { id: 'mix-v1-no-hum',  schemaVersion: 1, startTime: '2026-01-02T00:00:00.000Z' },
+  { id: 'mix-v1-hum',     schemaVersion: 1, startTime: '2026-01-03T00:00:00.000Z', humidity: 85 },
+  { id: 'mix-v2',         schemaVersion: 2, startTime: '2026-01-04T00:00:00.000Z', humidity: null },
+]));
+migrateEpisodes();
+const afterMixed = getEpisodes();
+assert.strictEqual(afterMixed[0].schemaVersion, 2,    'mixed: unversioned migrated to v2');
+assert.strictEqual(afterMixed[0].humidity,      null, 'mixed: unversioned gets humidity: null');
+assert.strictEqual(afterMixed[1].schemaVersion, 2,    'mixed: v1 (no humidity) migrated to v2');
+assert.strictEqual(afterMixed[1].humidity,      null, 'mixed: v1 without humidity gets humidity: null');
+assert.strictEqual(afterMixed[2].schemaVersion, 2,    'mixed: v1 (with humidity) migrated to v2');
+assert.strictEqual(afterMixed[2].humidity,      85,   'mixed: v1 with humidity retains its value');
+assert.strictEqual(afterMixed[3].schemaVersion, 2,    'mixed: v2 episode left unchanged');
+assert.strictEqual(afterMixed[3].humidity,      null, 'mixed: v2 episode humidity unchanged');
+console.log('✓ migrateEpisodes handles mixed store (unversioned + v1 + v2) correctly');
+
+// No-op when all records are already at v2
+global.localStorage.setItem('meniere_episodes', JSON.stringify([
+  { id: 'versioned', schemaVersion: 2, startTime: '2026-01-01T00:00:00.000Z', humidity: null },
+]));
+migrateEpisodes();
+assert.strictEqual(getEpisodes()[0].schemaVersion, 2, 'no-op when all records at v2');
+console.log('✓ migrateEpisodes is a no-op when all records already at v2');
 
 // saveAll failure — error handler fires, storage left untouched
 let migrationErrorFired = false;

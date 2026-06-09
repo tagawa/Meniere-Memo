@@ -28,6 +28,7 @@ export function formatEpisodeNotes(episode) {
   if (episode.pulse)           parts.push(`${t('log.pulse')}: ${episode.pulse}`);
   if (episode.temperature)     parts.push(`${t('log.temperature')}: ${episode.temperature}`);
   if (episode.airPressure)     parts.push(`${t('log.airPressure')}: ${episode.airPressure}`);
+  if (episode.humidity)        parts.push(`${t('log.humidity')}: ${episode.humidity}`);
   if (episode.notes)           parts.push(escHtml(episode.notes));
   return parts.join(' · ') || '—';
 }

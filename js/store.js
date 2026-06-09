@@ -69,7 +69,7 @@ export function resolveEndTime(newStartTime, currentEndTime) {
 export function createEpisode(fields = {}) {
   return {
     id:              generateUuid(),
-    schemaVersion:   1,
+    schemaVersion:   2,
     startTime:       new Date().toISOString(),
     endTime:         null,
     severity:        null,
@@ -82,6 +82,7 @@ export function createEpisode(fields = {}) {
     pulse:           null,
     temperature:     null,
     airPressure:     null,
+    humidity:        null,
     notes:           null,
     ...fields,
   };
@@ -89,8 +90,9 @@ export function createEpisode(fields = {}) {
 
 export function migrateEpisodes() {
   const episodes = getEpisodes();
-  if (episodes.every(ep => ep.schemaVersion !== undefined)) return;
-  saveAll(episodes.map(ep =>
-    ep.schemaVersion === undefined ? { ...ep, schemaVersion: 1 } : ep
-  ));
+  if (episodes.every(ep => ep.schemaVersion === 2)) return;
+  saveAll(episodes.map(ep => {
+    if (ep.schemaVersion === 2) return ep;
+    return { ...ep, schemaVersion: 2, humidity: ep.humidity ?? null };
+  }));
 }

@@ -1,5 +1,12 @@
-// Fetches current air pressure (hPa) from wttr.in using IP-based geolocation.
-// Returns a number on success, null on any failure (network, parse, offline, timeout).
+let cachedPressure = null;
+let cachedHumidity = null;
+let cachedForecast = null; // array of pressure numbers, one per 3-hour slot across 3 forecast days
+
+export function getCachedPressure() { return cachedPressure; }
+export function getCachedHumidity() { return cachedHumidity; }
+
+// Fetches current air pressure (hPa) from wttr.in. Also caches humidity as a side effect.
+// Returns pressure as a number on success, null on any failure.
 export async function fetchAirPressure() {
   const controller = new AbortController();
   const timerId = setTimeout(() => controller.abort(), 5000);
@@ -9,19 +16,14 @@ export async function fetchAirPressure() {
     const data = await res.json();
     const raw = data?.current_condition?.[0]?.pressure;
     const val = Number(raw);
+    const hum = Number(data?.current_condition?.[0]?.humidity);
+    if (Number.isFinite(hum)) cachedHumidity = hum;
     return Number.isFinite(val) ? val : null;
   } catch {
     return null;
   } finally {
     clearTimeout(timerId); // always clear — prevents timer firing after a completed request
   }
-}
-
-let cachedPressure = null;
-let cachedForecast = null; // array of pressure numbers, one per 3-hour slot across 3 forecast days
-
-export function getCachedPressure() {
-  return cachedPressure;
 }
 
 // Returns an array of up to 24 pressure values (numbers) in chronological order:
@@ -41,9 +43,11 @@ export async function initWeather() {
     if (!res.ok) return;
     const data = await res.json();
 
-    const rawPressure = data?.current_condition?.[0]?.pressure;
-    const pressure = Number(rawPressure);
+    const pressure = Number(data?.current_condition?.[0]?.pressure);
     if (Number.isFinite(pressure)) cachedPressure = pressure;
+
+    const humidity = Number(data?.current_condition?.[0]?.humidity);
+    if (Number.isFinite(humidity)) cachedHumidity = humidity;
 
     // Flatten 3 days × 8 slots into a single ordered array of pressure numbers.
     const forecast = (data?.weather ?? []).flatMap(day =>

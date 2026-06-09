@@ -191,6 +191,11 @@ function renderModal(episode) {
                 <input type="number" id="air" class="field-input"
                   placeholder="—" value="${episode.airPressure ?? ''}" inputmode="numeric" />
               </div>
+              <div class="field">
+                <label class="field-label" for="humidity">${t('log.humidity')}</label>
+                <input type="number" id="humidity" class="field-input"
+                  placeholder="—" value="${episode.humidity ?? ''}" inputmode="numeric" />
+              </div>
             </div>
           </div>
 
@@ -278,14 +283,15 @@ function collectOptionalFields() {
   const endTimeInput = document.getElementById('end-time');
   let endTime = calcEndTime(newStartTime, endTimeInput?.value ?? '');
 
-  const pulse         = parseFloat(document.getElementById('pulse')?.value) || null;
-  const temperature   = parseFloat(document.getElementById('temp')?.value)  || null;
-  const airPressure   = parseFloat(document.getElementById('air')?.value)   || null;
+  const pulse         = parseFloat(document.getElementById('pulse')?.value)    || null;
+  const temperature   = parseFloat(document.getElementById('temp')?.value)     || null;
+  const airPressure   = parseFloat(document.getElementById('air')?.value)      || null;
+  const humidity      = parseFloat(document.getElementById('humidity')?.value) || null;
   const bloodPressure = document.getElementById('bp')?.value.trim() || null;
   const notes         = document.getElementById('notes')?.value.trim() || null;
 
   return { startTime: newStartTime, endTime, tinnitus, earBlocked, headache, shoulderAche, coldExtremities,
-           bloodPressure, pulse, temperature, airPressure, notes };
+           bloodPressure, pulse, temperature, airPressure, humidity, notes };
 }
 
 // --- Public API ---

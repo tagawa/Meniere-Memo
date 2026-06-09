@@ -5,17 +5,23 @@ function makeFetch(ok, body) {
   return async () => ({ ok, json: async () => body });
 }
 
-global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013' }] });
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013', humidity: '72' }] });
 
-const { fetchAirPressure } = await import('../js/weather.js');
+const { fetchAirPressure, getCachedPressure, getCachedHumidity, getCachedForecast, initWeather } = await import('../js/weather.js');
+
+// Caches are null on module load, before any fetch
+assert.strictEqual(getCachedPressure(), null, 'getCachedPressure returns null before any fetch');
+console.log('✓ getCachedPressure returns null before any fetch');
+assert.strictEqual(getCachedHumidity(), null, 'getCachedHumidity returns null before any fetch');
+console.log('✓ getCachedHumidity returns null before any fetch');
 
 // Happy path — pressure returned as a number
-global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013' }] });
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013', humidity: '72' }] });
 assert.strictEqual(await fetchAirPressure(), 1013, 'returns pressure as number');
 console.log('✓ returns pressure as number on success');
 
 // Decimal pressure value
-global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013.5' }] });
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1013.5', humidity: '72' }] });
 assert.strictEqual(await fetchAirPressure(), 1013.5, 'handles decimal pressure');
 console.log('✓ handles decimal pressure value');
 
@@ -44,35 +50,39 @@ global.fetch = makeFetch(true, { current_condition: [] });
 assert.strictEqual(await fetchAirPressure(), null, 'returns null for empty current_condition');
 console.log('✓ returns null for empty current_condition array');
 
-// --- initWeather / getCachedPressure ---
-const { getCachedPressure, initWeather } = await import('../js/weather.js');
+// --- initWeather ---
 
-// getCachedPressure returns null before initWeather is called
-assert.strictEqual(getCachedPressure(), null, 'getCachedPressure returns null before initWeather');
-console.log('✓ getCachedPressure returns null before initWeather is called');
-
-// initWeather sets cachedPressure on success
-global.fetch = makeFetch(true, { current_condition: [{ pressure: '1015' }] });
+// initWeather sets cachedPressure and cachedHumidity on success
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1015', humidity: '68' }] });
 await initWeather();
 assert.strictEqual(getCachedPressure(), 1015, 'initWeather sets cachedPressure on success');
 console.log('✓ initWeather sets cachedPressure to fetched value on success');
+assert.strictEqual(getCachedHumidity(), 68, 'initWeather sets cachedHumidity on success');
+console.log('✓ initWeather sets cachedHumidity to fetched value on success');
 
-// initWeather retains cachedPressure on failure (does not wipe last known value)
+// initWeather retains cached values on failure
 global.fetch = async () => { throw new Error('network'); };
 await initWeather();
 assert.strictEqual(getCachedPressure(), 1015, 'initWeather retains cachedPressure on fetch failure');
 console.log('✓ initWeather retains cachedPressure on fetch failure');
+assert.strictEqual(getCachedHumidity(), 68, 'initWeather retains cachedHumidity on fetch failure');
+console.log('✓ initWeather retains cachedHumidity on fetch failure');
 
 // --- getCachedForecast ---
-const { getCachedForecast } = await import('../js/weather.js');
 
 // getCachedForecast returns null before forecast data is loaded
 assert.strictEqual(getCachedForecast(), null, 'getCachedForecast returns null before initWeather sets forecast');
 console.log('✓ getCachedForecast returns null before forecast data is loaded');
 
 // initWeather sets cachedForecast from weather[].hourly
+// fetchAirPressure caches humidity as a side effect
+global.fetch = makeFetch(true, { current_condition: [{ pressure: '1020', humidity: '55' }] });
+await fetchAirPressure();
+assert.strictEqual(getCachedHumidity(), 55, 'fetchAirPressure updates cachedHumidity as side effect');
+console.log('✓ fetchAirPressure updates cachedHumidity as side effect');
+
 const MOCK_FULL = {
-  current_condition: [{ pressure: '1013' }],
+  current_condition: [{ pressure: '1013', humidity: '72' }],
   weather: [
     { hourly: [
       { pressure: '1010' }, { pressure: '1011' }, { pressure: '1012' }, { pressure: '1013' },

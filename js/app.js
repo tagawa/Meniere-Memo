@@ -5,7 +5,7 @@ import { initLog, openEditLog } from './log.js';
 import { renderHistory }        from './history.js';
 import { renderDoctor }         from './doctor.js';
 import { addEpisode, createEpisode, updateEpisode, setWriteErrorHandler, migrateEpisodes, getEpisodes } from './store.js';
-import { fetchAirPressure, initWeather, getCachedPressure } from './weather.js';
+import { fetchAirPressure, initWeather, getCachedPressure, getCachedHumidity } from './weather.js';
 import { renderPressureStrip } from './pressure-strip.js';
 
 function showToast(msg, { assertive = false } = {}) {
@@ -39,6 +39,7 @@ function quickLog() {
 
   const episode = createEpisode();
   episode.airPressure = getCachedPressure();
+  episode.humidity    = getCachedHumidity();
   addEpisode(episode);
   document.getElementById('status-msg').textContent = t('log.episodeSaved');
   renderView('home');
@@ -46,14 +47,18 @@ function quickLog() {
   // #6 — target the new card by ID rather than first-in-DOM-order
   document.querySelector(`[data-episode-id="${episode.id}"]`)?.classList.add('episode-card--new');
 
-  // #3 — race guard: skip fresh-fetch update if user edited airPressure before it resolved
+  // #3 — race guard: skip fresh-fetch update for each field if user edited it before fetch resolved
   const originalPressure = episode.airPressure;
+  const originalHumidity = episode.humidity;
   fetchAirPressure().then(airPressure => {
-    if (airPressure === null) return;
     const current = getEpisodes().find(e => e.id === episode.id);
     if (!current) return; // episode was deleted before fetch resolved
-    if (!Object.is(current.airPressure, originalPressure)) return; // user edited it
-    updateEpisode(episode.id, { airPressure });
+    const updates = {};
+    if (airPressure !== null && Object.is(current.airPressure, originalPressure)) updates.airPressure = airPressure;
+    const humidity = getCachedHumidity(); // updated as side effect of fetchAirPressure
+    if (humidity !== null && Object.is(current.humidity, originalHumidity)) updates.humidity = humidity;
+    if (!Object.keys(updates).length) return;
+    updateEpisode(episode.id, updates);
     renderView('home');
   }).catch(() => {});
 }
